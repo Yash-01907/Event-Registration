@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FACULTY
+  STUDENT
+}
+
+enum RegType {
+  ONLINE
+  MANUAL
+}
+
+enum Category {
+  TECH
+  CULTURAL
+  SPORTS
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        Role     @default(STUDENT)
+  rollNumber  String?
+  branch      String?
+  phone       String?
+
+  eventsOwned       Event[]        @relation("FacultyOwner")
+  coordinatedEvents Event[]        @relation("EventCoordinators")
+  registrations     Registration[]
+}
+
+model Event {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  date              DateTime?
+  location          String?
+  fees              Int      @default(0)
+  category          Category?
+  posterUrl         String?
+  isPublished       Boolean  @default(false)
+
+  mainCoordinatorId String
+  mainCoordinator   User     @relation("FacultyOwner", fields: [mainCoordinatorId], references: [id])
+
+  coordinators      User[]          @relation("EventCoordinators")
+  registrations     Registration[]
+}
+
+model Registration {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  type      RegType  @default(ONLINE)
+
+  eventId   String
+  studentId String
+
+  event     Event    @relation(fields: [eventId], references: [id])
+  student   User     @relation(fields: [studentId], references: [id])
+
+  @@unique([eventId, studentId])
+}
