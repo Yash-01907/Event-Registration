@@ -1,11 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Auth/Login";
+import useAuthStore from "@/store/authStore";
 
 const queryClient = new QueryClient();
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -22,12 +31,11 @@ function App() {
                   </div>
                 }
               />
+              <Route path="/login" element={<Login />} />
               <Route
-                path="/login"
+                path="/dashboard"
                 element={
-                  <div className="pt-20 text-center">
-                    Login Page (Coming Soon)
-                  </div>
+                  <div className="pt-20 text-center">Dashboard (Protected)</div>
                 }
               />
             </Routes>

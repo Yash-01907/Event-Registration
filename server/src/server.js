@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,9 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+
+// Routes
+app.use("/api/auth", authRoutes);
 
 // Basic Route
 app.get("/", (req, res) => {
