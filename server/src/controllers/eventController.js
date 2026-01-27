@@ -11,7 +11,7 @@ const createEvent = async (req, res) => {
     const event = await prisma.event.create({
       data: {
         name,
-        date: date ? new Date(date) : null,
+        date: date ? new Date(date) : undefined,
         description,
         location,
         fees: fees ? parseInt(fees) : 0,

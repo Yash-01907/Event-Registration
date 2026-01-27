@@ -4,7 +4,27 @@ import { useEffect } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Auth/Login";
+import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
+
 import useAuthStore from "@/store/authStore";
+
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, isLoading } = useAuthStore();
+
+  if (isLoading) return <div className="pt-20 text-center">Loading...</div>;
+  if (!user)
+    return (
+      <div className="pt-20 text-center">
+        Please log in to access this page.
+      </div>
+    );
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <div className="pt-20 text-center">Access Denied</div>;
+  }
+
+  return children;
+};
 
 const queryClient = new QueryClient();
 
@@ -35,7 +55,9 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <div className="pt-20 text-center">Dashboard (Protected)</div>
+                  <ProtectedRoute allowedRoles={["FACULTY"]}>
+                    <FacultyDashboard />
+                  </ProtectedRoute>
                 }
               />
             </Routes>
@@ -45,5 +67,4 @@ function App() {
     </QueryClientProvider>
   );
 }
-
 export default App;
