@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Auth/Login";
-import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
+import ManageEvent from "@/pages/Dashboard/ManageEvent";
 
+import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
 import useAuthStore from "@/store/authStore";
 
 // Protected Route Component

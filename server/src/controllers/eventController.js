@@ -75,4 +75,128 @@ const getMyEvents = async (req, res) => {
   }
 };
 
-export { createEvent, getEvents, getMyEvents };
+// @desc    Get single event by ID
+// @route   GET /api/events/:id
+// @access  Public
+const getEventById = async (req, res) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      include: {
+        mainCoordinator: {
+          select: { name: true, email: true },
+        },
+        coordinators: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    if (event) {
+      res.status(200).json(event);
+    } else {
+      res.status(404).json({ message: "Event not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error fetching event" });
+  }
+};
+
+// @desc    Update event details
+// @route   PUT /api/events/:id
+// @access  Private (Main Coordinator only)
+const updateEvent = async (req, res) => {
+  const { name, date, description, location, fees, category, posterUrl } =
+    req.body;
+
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.mainCoordinatorId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this event" });
+    }
+
+    const updatedEvent = await prisma.event.update({
+      where: { id: req.params.id },
+      data: {
+        name,
+        date: date ? new Date(date) : undefined,
+        description,
+        location,
+        fees: fees ? parseInt(fees) : 0,
+        category,
+        posterUrl,
+      },
+    });
+
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error updating event" });
+  }
+};
+
+// @desc    Add student coordinator to event
+// @route   POST /api/events/:id/coordinator
+// @access  Private (Main Coordinator only)
+const addCoordinator = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.mainCoordinatorId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to add coordinators" });
+    }
+
+    const student = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!student) {
+      return res
+        .status(404)
+        .json({ message: "Student not found with this email" });
+    }
+
+    await prisma.event.update({
+      where: { id: req.params.id },
+      data: {
+        coordinators: {
+          connect: { id: student.id },
+        },
+      },
+    });
+
+    res.status(200).json({ message: "Coordinator added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error adding coordinator" });
+  }
+};
+
+export {
+  createEvent,
+  getEvents,
+  getMyEvents,
+  getEventById,
+  updateEvent,
+  addCoordinator,
+};

@@ -93,7 +93,10 @@ export default function FacultyDashboard() {
                   {events.map((event) => (
                     <tr
                       key={event.id}
-                      className="hover:bg-white/5 transition-colors"
+                      className="hover:bg-white/5 transition-colors cursor-pointer"
+                      onClick={() =>
+                        (window.location.href = `/dashboard/event/${event.id}`)
+                      }
                     >
                       <td className="px-6 py-4">
                         <div className="font-medium text-white">
