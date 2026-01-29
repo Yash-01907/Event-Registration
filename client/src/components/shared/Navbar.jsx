@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, LogOut } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 
 export default function Navbar() {
   const { user, logout } = useAuthStore();
+  const location = useLocation();
+  const isCoordinatorDashboard = location.pathname === "/coordinator-dashboard";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/60 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
@@ -26,6 +28,40 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-4">
+                {user.coordinatedEvents &&
+                  user.coordinatedEvents.length > 0 &&
+                  (isCoordinatorDashboard ? (
+                    <Link to="/">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hidden sm:flex text-xs h-8"
+                      >
+                        Student View
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/coordinator-dashboard">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hidden sm:flex text-xs h-8"
+                      >
+                        Coordinator Mode
+                      </Button>
+                    </Link>
+                  ))}
+                {user.role === "FACULTY" && (
+                  <Link to="/dashboard">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hidden sm:flex text-xs h-8"
+                    >
+                      Faculty Dashboard
+                    </Button>
+                  </Link>
+                )}
                 <span className="text-sm font-medium text-white">
                   {user.name}
                 </span>

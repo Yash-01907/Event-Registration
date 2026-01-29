@@ -62,6 +62,11 @@ const loginUser = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        coordinatedEvents: {
+          select: { id: true },
+        },
+      },
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -75,6 +80,7 @@ const loginUser = async (req, res) => {
         rollNumber: user.rollNumber,
         branch: user.branch,
         phone: user.phone,
+        coordinatedEvents: user.coordinatedEvents,
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });
@@ -108,6 +114,7 @@ const getUserProfile = async (req, res) => {
     rollNumber: req.user.rollNumber,
     branch: req.user.branch,
     phone: req.user.phone,
+    coordinatedEvents: req.user.coordinatedEvents,
   };
   res.status(200).json(user);
 };

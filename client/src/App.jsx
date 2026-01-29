@@ -4,7 +4,9 @@ import { useEffect } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Auth/Login";
+import Register from "@/pages/Auth/Register";
 import ManageEvent from "@/pages/Dashboard/ManageEvent";
+import CoordinatorDashboard from "@/pages/Dashboard/CoordinatorDashboard";
 
 import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
 import useAuthStore from "@/store/authStore";
@@ -53,11 +55,28 @@ function App() {
                 }
               />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute allowedRoles={["FACULTY"]}>
                     <FacultyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/event/:id"
+                element={
+                  <ProtectedRoute allowedRoles={["FACULTY"]}>
+                    <ManageEvent />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/coordinator-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}>
+                    <CoordinatorDashboard />
                   </ProtectedRoute>
                 }
               />

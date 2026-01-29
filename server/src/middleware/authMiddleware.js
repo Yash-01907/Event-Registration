@@ -20,6 +20,9 @@ const protect = async (req, res, next) => {
           rollNumber: true,
           branch: true,
           phone: true,
+          coordinatedEvents: {
+            select: { id: true },
+          },
         },
       });
 

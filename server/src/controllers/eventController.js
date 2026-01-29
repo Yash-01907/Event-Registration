@@ -192,6 +192,38 @@ const addCoordinator = async (req, res) => {
   }
 };
 
+// @desc    Get events where user is a coordinator
+// @route   GET /api/events/coordinated-events
+// @access  Private
+const getCoordinatedEvents = async (req, res) => {
+  try {
+    const events = await prisma.event.findMany({
+      where: {
+        coordinators: {
+          some: {
+            id: req.user.id,
+          },
+        },
+      },
+      include: {
+        mainCoordinator: {
+          select: { name: true, email: true },
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
+
+    res.status(200).json(events);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Server error fetching coordinated events" });
+  }
+};
+
 export {
   createEvent,
   getEvents,
@@ -199,4 +231,5 @@ export {
   getEventById,
   updateEvent,
   addCoordinator,
+  getCoordinatedEvents,
 };
