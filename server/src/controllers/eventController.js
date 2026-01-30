@@ -116,13 +116,21 @@ const updateEvent = async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
+      include: {
+        coordinators: {
+          select: { id: true },
+        },
+      },
     });
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.mainCoordinatorId !== req.user.id) {
+    const isCoordinator = event.coordinators.some((c) => c.id === req.user.id);
+    const isMain = event.mainCoordinatorId === req.user.id;
+
+    if (!isMain && !isCoordinator) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });
@@ -234,13 +242,21 @@ const togglePublishStatus = async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
+      include: {
+        coordinators: {
+          select: { id: true },
+        },
+      },
     });
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.mainCoordinatorId !== req.user.id) {
+    const isCoordinator = event.coordinators.some((c) => c.id === req.user.id);
+    const isMain = event.mainCoordinatorId === req.user.id;
+
+    if (!isMain && !isCoordinator) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });

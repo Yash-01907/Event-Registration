@@ -17,7 +17,7 @@ export default function Navbar() {
           className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight text-primary"
         >
           <CalendarDays className="h-6 w-6" />
-          <span>UniFest</span>
+          <span>Gdecfest</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link
