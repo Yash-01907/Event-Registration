@@ -6,6 +6,7 @@ import {
   MapPin,
   IndianRupee,
   Loader2,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -17,6 +18,23 @@ export default function FacultyDashboard() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleTogglePublish = async (eventId, currentStatus) => {
+    try {
+      const response = await api.patch(`/events/${eventId}/publish`);
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === eventId
+            ? { ...event, isPublished: response.data.isPublished }
+            : event,
+        ),
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to update publish status",
+      );
+    }
+  };
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
@@ -136,16 +154,33 @@ export default function FacultyDashboard() {
                         {event.fees > 0 ? `₹${event.fees}` : "Free"}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-                            event.isPublished
-                              ? "bg-green-400/10 text-green-400 ring-green-400/20"
-                              : "bg-yellow-400/10 text-yellow-400 ring-yellow-400/20",
-                          )}
-                        >
-                          {event.isPublished ? "Published" : "Draft"}
-                        </span>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `/dashboard/event/${event.id}/registrations`;
+                            }}
+                            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                            title="View Registrations"
+                          >
+                            <Users className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePublish(event.id, event.isPublished);
+                            }}
+                            className={cn(
+                              "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors hover:bg-opacity-20",
+                              event.isPublished
+                                ? "bg-green-400/10 text-green-400 ring-green-400/20 hover:bg-green-400/20"
+                                : "bg-yellow-400/10 text-yellow-400 ring-yellow-400/20 hover:bg-yellow-400/20",
+                            )}
+                            title="Click to toggle status"
+                          >
+                            {event.isPublished ? "Published" : "Draft"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

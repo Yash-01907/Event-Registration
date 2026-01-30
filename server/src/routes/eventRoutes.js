@@ -7,6 +7,7 @@ import {
   updateEvent,
   addCoordinator,
   getCoordinatedEvents,
+  togglePublishStatus,
 } from "../controllers/eventController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -19,5 +20,6 @@ router.get("/coordinated-events", protect, getCoordinatedEvents);
 
 router.route("/:id").get(getEventById).put(protect, updateEvent);
 router.post("/:id/coordinator", protect, addCoordinator);
+router.patch("/:id/publish", protect, togglePublishStatus);
 
 export default router;

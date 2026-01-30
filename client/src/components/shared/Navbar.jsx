@@ -7,6 +7,7 @@ export default function Navbar() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const isCoordinatorDashboard = location.pathname === "/coordinator-dashboard";
+  console.log("Navbar User:", user);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/60 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">

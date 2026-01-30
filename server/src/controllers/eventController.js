@@ -34,6 +34,9 @@ const createEvent = async (req, res) => {
 const getEvents = async (req, res) => {
   try {
     const events = await prisma.event.findMany({
+      where: {
+        isPublished: true,
+      },
       include: {
         mainCoordinator: {
           select: {
@@ -224,6 +227,39 @@ const getCoordinatedEvents = async (req, res) => {
   }
 };
 
+// @desc    Toggle event publish status
+// @route   PATCH /api/events/:id/publish
+// @access  Private (Main Coordinator only)
+const togglePublishStatus = async (req, res) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.mainCoordinatorId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this event" });
+    }
+
+    const updatedEvent = await prisma.event.update({
+      where: { id: req.params.id },
+      data: {
+        isPublished: !event.isPublished,
+      },
+    });
+
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error updating publish status" });
+  }
+};
+
 export {
   createEvent,
   getEvents,
@@ -232,4 +268,5 @@ export {
   updateEvent,
   addCoordinator,
   getCoordinatedEvents,
+  togglePublishStatus,
 };

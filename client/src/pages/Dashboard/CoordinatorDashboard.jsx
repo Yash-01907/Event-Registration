@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Calendar, MapPin, IndianRupee, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -110,15 +111,20 @@ export default function CoordinatorDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            alert("Manage Registrations - Feature coming soon!")
-                          }
-                        >
-                          Manage Registrations
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Link to={`/dashboard/event/${event.id}`}>
+                            <Button variant="outline" size="sm">
+                              Edit Event
+                            </Button>
+                          </Link>
+                          <Link
+                            to={`/dashboard/event/${event.id}/registrations`}
+                          >
+                            <Button variant="outline" size="sm">
+                              Registrations
+                            </Button>
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

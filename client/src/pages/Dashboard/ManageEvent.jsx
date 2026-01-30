@@ -111,13 +111,23 @@ export default function ManageEvent() {
 
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
-      <Button
-        variant="ghost"
-        onClick={() => navigate("/dashboard")}
-        className="mb-6 gap-2 text-gray-400 hover:text-white"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-      </Button>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/dashboard")}
+          className="gap-2 text-gray-400 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => navigate(`/dashboard/event/${id}/registrations`)}
+          className="gap-2"
+        >
+          <Users className="h-4 w-4" /> View Registrations
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Event Details */}
