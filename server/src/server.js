@@ -7,10 +7,10 @@ import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
 
-dotenv.config();
+import env from "./config/env.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = env.server.port;
 
 // Middleware
 app.use(helmet());
@@ -20,6 +20,10 @@ app.use(
     credentials: true,
   }),
 );
+// Rate Limit Global (loose)
+import { apiLimiter } from "./middleware/rateLimit.js";
+app.use("/api", apiLimiter);
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -27,6 +31,12 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
+import uploadRoutes from "./routes/uploadRoutes.js";
+app.use("/api/upload", uploadRoutes);
+
+// Error Handling
+import { errorHandler } from "./middleware/errorMiddleware.js";
+app.use(errorHandler);
 
 // Basic Route
 app.get("/", (req, res) => {

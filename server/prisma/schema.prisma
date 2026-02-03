@@ -49,6 +49,9 @@ model Event {
   posterUrl         String?
   isPublished       Boolean  @default(false)
 
+  maxParticipants      Int?
+  registrationDeadline DateTime?
+
   mainCoordinatorId String
   mainCoordinator   User     @relation("FacultyOwner", fields: [mainCoordinatorId], references: [id])
 

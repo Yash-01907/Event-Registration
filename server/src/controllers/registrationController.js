@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import bcrypt from "bcryptjs";
+import { checkEventAccess } from "./eventController.js";
 
 // @desc    Register for an event
 // @route   POST /api/registrations
@@ -16,6 +17,28 @@ const registerForEvent = async (req, res) => {
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
+    }
+
+    // 1. Check Deadline
+    if (
+      event.registrationDeadline &&
+      new Date() > new Date(event.registrationDeadline)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Registration invalid: Deadline has passed" });
+    }
+
+    // 2. Check Capacity
+    if (event.maxParticipants) {
+      const currentCount = await prisma.registration.count({
+        where: { eventId },
+      });
+      if (currentCount >= event.maxParticipants) {
+        return res
+          .status(400)
+          .json({ message: "Registration invalid: Event is full" });
+      }
     }
 
     // Check if already registered
@@ -84,9 +107,23 @@ const getEventRegistrations = async (req, res) => {
   const { eventId } = req.params;
 
   try {
-    // Optional: Check if user is authorized (coordinator of this event or faculty)
-    // For now, relying on protected route generic check, but ideally:
-    // if (req.user.role !== 'FACULTY' && !req.user.coordinatedEvents.some(e => e.id === eventId)) ...
+    // Check Authorization
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        coordinators: { select: { id: true } },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user.id)) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view these registrations" });
+    }
 
     const registrations = await prisma.registration.findMany({
       where: {
@@ -123,6 +160,25 @@ const createManualRegistration = async (req, res) => {
   const { eventId, name, email, rollNumber, phone } = req.body;
 
   try {
+    // 0. Check Authorization
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        coordinators: { select: { id: true } },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user.id)) {
+      return res
+        .status(403)
+        .json({
+          message: "Not authorized to add registrations for this event",
+        });
+    }
     // 1. Check if user exists
     let user = await prisma.user.findUnique({
       where: { email },
@@ -130,8 +186,15 @@ const createManualRegistration = async (req, res) => {
 
     // 2. If not, create new user
     if (!user) {
+      const crypto = await import("crypto");
+      const tempPassword = crypto.randomBytes(16).toString("hex");
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash("event123", salt);
+      const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
+      // TODO: Send email with tempPassword
+      console.log(
+        `[MANUAL_REGISTRATION] Created user ${email} with password: ${tempPassword}`,
+      );
 
       user = await prisma.user.create({
         data: {

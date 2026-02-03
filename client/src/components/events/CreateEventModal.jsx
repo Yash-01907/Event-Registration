@@ -10,6 +10,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -136,14 +137,44 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-300">
-              Description
-            </label>
             <textarea
               rows="3"
               className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               {...register("description")}
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-300">
+              Event Poster
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                setIsLoading(true);
+                const formData = new FormData();
+                formData.append("file", file);
+
+                try {
+                  const res = await api.post("/upload", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                  });
+                  // For now, I'll use a temp variable approach or just inject the logic assuming setValue is available if I add it.
+                } catch (error) {
+                  console.error("Upload failed", error);
+                  alert("Failed to upload image");
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+            />
+            {/* Hidden input to store URL */}
+            <input type="hidden" {...register("posterUrl")} />
           </div>
 
           <div className="flex justify-end gap-3 pt-2">

@@ -3,9 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -64,7 +65,8 @@ export default function Login() {
         </div>
 
         {error && (
-          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/20">
+          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/20 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
             {error}
           </div>
         )}
@@ -76,20 +78,31 @@ export default function Login() {
                 Email address
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <Mail className="h-5 w-5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail
+                    className={cn(
+                      "h-5 w-5",
+                      errors.email ? "text-destructive" : "text-gray-400",
+                    )}
+                  />
                 </div>
                 <input
                   id="email"
                   type="email"
                   autoComplete="email"
-                  className="block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                  className={cn(
+                    "block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
+                    errors.email
+                      ? "ring-destructive focus:ring-destructive"
+                      : "ring-white/10 focus:ring-primary",
+                  )}
                   placeholder="Email address"
                   {...register("email")}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.email.message}
                 </p>
               )}
@@ -100,20 +113,31 @@ export default function Login() {
                 Password
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <Lock className="h-5 w-5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock
+                    className={cn(
+                      "h-5 w-5",
+                      errors.password ? "text-destructive" : "text-gray-400",
+                    )}
+                  />
                 </div>
                 <input
                   id="password"
                   type="password"
                   autoComplete="current-password"
-                  className="block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                  className={cn(
+                    "block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
+                    errors.password
+                      ? "ring-destructive focus:ring-destructive"
+                      : "ring-white/10 focus:ring-primary",
+                  )}
                   placeholder="Password"
                   {...register("password")}
                 />
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.password.message}
                 </p>
               )}

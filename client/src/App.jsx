@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 import Navbar from "@/components/shared/Navbar";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Auth/Login";
@@ -43,6 +44,7 @@ function App() {
   }, [checkAuth]);
 
   return (
+    // ... imports
     <QueryClientProvider client={queryClient}>
       <Router>
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -96,6 +98,7 @@ function App() {
               />
             </Routes>
           </main>
+          <Toaster richColors position="top-right" theme="dark" />
         </div>
       </Router>
     </QueryClientProvider>

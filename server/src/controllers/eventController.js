@@ -92,6 +92,9 @@ const getEventById = async (req, res) => {
         coordinators: {
           select: { id: true, name: true, email: true },
         },
+        _count: {
+          select: { registrations: true },
+        },
       },
     });
 
@@ -104,6 +107,13 @@ const getEventById = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error fetching event" });
   }
+};
+
+// Helper to check event access
+const checkEventAccess = (event, userId) => {
+  const isCoordinator = event.coordinators.some((c) => c.id === userId);
+  const isMain = event.mainCoordinatorId === userId;
+  return isMain || isCoordinator;
 };
 
 // @desc    Update event details
@@ -127,10 +137,7 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const isCoordinator = event.coordinators.some((c) => c.id === req.user.id);
-    const isMain = event.mainCoordinatorId === req.user.id;
-
-    if (!isMain && !isCoordinator) {
+    if (!checkEventAccess(event, req.user.id)) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });
@@ -253,10 +260,7 @@ const togglePublishStatus = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const isCoordinator = event.coordinators.some((c) => c.id === req.user.id);
-    const isMain = event.mainCoordinatorId === req.user.id;
-
-    if (!isMain && !isCoordinator) {
+    if (!checkEventAccess(event, req.user.id)) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });
@@ -285,4 +289,5 @@ export {
   addCoordinator,
   getCoordinatedEvents,
   togglePublishStatus,
+  checkEventAccess,
 };

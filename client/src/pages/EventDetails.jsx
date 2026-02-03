@@ -26,6 +26,13 @@ export default function EventDetails() {
   const [registering, setRegistering] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
 
+  const isSoldOut =
+    event?.maxParticipants &&
+    event?._count?.registrations >= event.maxParticipants;
+  const isClosed =
+    event?.registrationDeadline &&
+    new Date() > new Date(event.registrationDeadline);
+
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -121,6 +128,16 @@ export default function EventDetails() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/20 text-xs font-semibold uppercase tracking-wider mb-4">
               {event.category}
             </span>
+            {isSoldOut && (
+              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-destructive/20 text-destructive border border-destructive/20 text-xs font-semibold uppercase tracking-wider mb-4">
+                Sold Out
+              </span>
+            )}
+            {isClosed && !isSoldOut && (
+              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/20 text-xs font-semibold uppercase tracking-wider mb-4">
+                Closed
+              </span>
+            )}
             <h1 className="text-4xl md:text-5xl md:leading-tight font-bold font-heading text-white mb-2 text-shadow-lg">
               {event.name}
             </h1>
@@ -206,14 +223,26 @@ export default function EventDetails() {
                   className="w-full h-12 text-lg font-semibold"
                   size="lg"
                   onClick={handleRegister}
-                  disabled={registering || isRegistered}
-                  variant={isRegistered ? "outline" : "default"}
+                  disabled={
+                    registering || isRegistered || isSoldOut || isClosed
+                  }
+                  variant={
+                    isRegistered
+                      ? "outline"
+                      : isSoldOut || isClosed
+                        ? "secondary"
+                        : "default"
+                  }
                 >
                   {isRegistered ? (
                     <>
                       <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
                       Registered
                     </>
+                  ) : isSoldOut ? (
+                    "Sold Out"
+                  ) : isClosed ? (
+                    "Registration Closed"
                   ) : registering ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

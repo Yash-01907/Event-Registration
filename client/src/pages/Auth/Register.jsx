@@ -10,9 +10,11 @@ import {
   GraduationCap,
   Phone,
   FileDigit,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useAuthStore from "@/store/authStore";
+import { cn } from "@/lib/utils";
 
 const registerSchema = z
   .object({
@@ -86,7 +88,8 @@ export default function Register() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive text-center">
+          <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive text-center flex items-center justify-center gap-2">
+            <AlertCircle className="h-4 w-4" />
             {error}
           </div>
         )}
@@ -99,17 +102,28 @@ export default function Register() {
               </label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <User className="h-5 w-5 text-gray-500" />
+                  <User
+                    className={cn(
+                      "h-5 w-5",
+                      errors.name ? "text-destructive" : "text-gray-500",
+                    )}
+                  />
                 </div>
                 <input
                   type="text"
                   placeholder="John Doe"
-                  className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors"
+                  className={cn(
+                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    errors.name
+                      ? "border-destructive focus:border-destructive focus:ring-destructive"
+                      : "border-white/10 focus:border-primary focus:ring-primary",
+                  )}
                   {...register("name")}
                 />
               </div>
               {errors.name && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.name.message}
                 </p>
               )}
@@ -121,17 +135,28 @@ export default function Register() {
               </label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-5 w-5 text-gray-500" />
+                  <Mail
+                    className={cn(
+                      "h-5 w-5",
+                      errors.email ? "text-destructive" : "text-gray-500",
+                    )}
+                  />
                 </div>
                 <input
                   type="email"
                   placeholder="you@example.com"
-                  className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors"
+                  className={cn(
+                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    errors.email
+                      ? "border-destructive focus:border-destructive focus:ring-destructive"
+                      : "border-white/10 focus:border-primary focus:ring-primary",
+                  )}
                   {...register("email")}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.email.message}
                 </p>
               )}
@@ -143,17 +168,28 @@ export default function Register() {
               </label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Phone className="h-5 w-5 text-gray-500" />
+                  <Phone
+                    className={cn(
+                      "h-5 w-5",
+                      errors.phone ? "text-destructive" : "text-gray-500",
+                    )}
+                  />
                 </div>
                 <input
                   type="tel"
                   placeholder="1234567890"
-                  className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors"
+                  className={cn(
+                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    errors.phone
+                      ? "border-destructive focus:border-destructive focus:ring-destructive"
+                      : "border-white/10 focus:border-primary focus:ring-primary",
+                  )}
                   {...register("phone")}
                 />
               </div>
               {errors.phone && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.phone.message}
                 </p>
               )}
@@ -163,10 +199,20 @@ export default function Register() {
               <label className="text-sm font-medium text-gray-300">Role</label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <GraduationCap className="h-5 w-5 text-gray-500" />
+                  <GraduationCap
+                    className={cn(
+                      "h-5 w-5",
+                      errors.role ? "text-destructive" : "text-gray-500",
+                    )}
+                  />
                 </div>
                 <select
-                  className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors appearance-none"
+                  className={cn(
+                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm appearance-none",
+                    errors.role
+                      ? "border-destructive focus:border-destructive focus:ring-destructive"
+                      : "border-white/10 focus:border-primary focus:ring-primary",
+                  )}
                   {...register("role")}
                 >
                   <option
@@ -184,7 +230,8 @@ export default function Register() {
                 </select>
               </div>
               {errors.role && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.role.message}
                 </p>
               )}
@@ -197,17 +244,30 @@ export default function Register() {
                 </label>
                 <div className="relative mt-1">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <FileDigit className="h-5 w-5 text-gray-500" />
+                    <FileDigit
+                      className={cn(
+                        "h-5 w-5",
+                        errors.rollNumber
+                          ? "text-destructive"
+                          : "text-gray-500",
+                      )}
+                    />
                   </div>
                   <input
                     type="text"
                     placeholder="e.g. 2023CS101"
-                    className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors"
+                    className={cn(
+                      "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                      errors.rollNumber
+                        ? "border-destructive focus:border-destructive focus:ring-destructive"
+                        : "border-white/10 focus:border-primary focus:ring-primary",
+                    )}
                     {...register("rollNumber")}
                   />
                 </div>
                 {errors.rollNumber && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
                     {errors.rollNumber.message}
                   </p>
                 )}
@@ -220,17 +280,28 @@ export default function Register() {
               </label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-500" />
+                  <Lock
+                    className={cn(
+                      "h-5 w-5",
+                      errors.password ? "text-destructive" : "text-gray-500",
+                    )}
+                  />
                 </div>
                 <input
                   type="password"
                   placeholder="••••••••"
-                  className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-colors"
+                  className={cn(
+                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    errors.password
+                      ? "border-destructive focus:border-destructive focus:ring-destructive"
+                      : "border-white/10 focus:border-primary focus:ring-primary",
+                  )}
                   {...register("password")}
                 />
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.password.message}
                 </p>
               )}
