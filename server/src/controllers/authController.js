@@ -6,7 +6,8 @@ import generateToken from "../utils/generateToken.js";
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-  const { name, email, password, role, rollNumber, branch, phone } = req.body;
+  const { name, email, password, role, rollNumber, branch, semester, phone } =
+    req.body;
 
   try {
     const userExists = await prisma.user.findUnique({
@@ -28,6 +29,7 @@ const registerUser = async (req, res) => {
         role: role || "STUDENT",
         rollNumber,
         branch,
+        semester: semester ? parseInt(semester) : null,
         phone,
       },
     });
@@ -42,6 +44,7 @@ const registerUser = async (req, res) => {
         role: user.role,
         rollNumber: user.rollNumber,
         branch: user.branch,
+        semester: user.semester,
         phone: user.phone,
       });
     } else {
@@ -52,7 +55,6 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
@@ -79,6 +81,7 @@ const loginUser = async (req, res) => {
         role: user.role,
         rollNumber: user.rollNumber,
         branch: user.branch,
+        semester: user.semester,
         phone: user.phone,
         coordinatedEvents: user.coordinatedEvents,
       });
@@ -113,6 +116,7 @@ const getUserProfile = async (req, res) => {
     role: req.user.role,
     rollNumber: req.user.rollNumber,
     branch: req.user.branch,
+    semester: req.user.semester,
     phone: req.user.phone,
     coordinatedEvents: req.user.coordinatedEvents,
   };
@@ -133,6 +137,9 @@ const updateUserProfile = async (req, res) => {
     user.phone = req.body.phone || user.phone;
     user.rollNumber = req.body.rollNumber || user.rollNumber;
     user.branch = req.body.branch || user.branch;
+    user.semester = req.body.semester
+      ? parseInt(req.body.semester)
+      : user.semester;
 
     if (req.body.email && req.body.email !== user.email) {
       const emailExists = await prisma.user.findUnique({
@@ -151,6 +158,7 @@ const updateUserProfile = async (req, res) => {
         phone: user.phone,
         rollNumber: user.rollNumber,
         branch: user.branch,
+        semester: user.semester,
       },
       include: {
         coordinatedEvents: {

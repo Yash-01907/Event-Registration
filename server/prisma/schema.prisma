@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   FACULTY
   STUDENT
+  ADMIN
 }
 
 enum RegType {
@@ -31,6 +32,7 @@ model User {
   role        Role     @default(STUDENT)
   rollNumber  String?
   branch      String?
+  semester    Int?
   phone       String?
 
   eventsOwned       Event[]        @relation("FacultyOwner")

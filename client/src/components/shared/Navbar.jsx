@@ -57,7 +57,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-4">
-                {user.role === "FACULTY" && (
+                {(user.role === "FACULTY" || user.role === "ADMIN") && (
                   <Link to="/dashboard">
                     <Button variant="ghost" className="font-medium">
                       Dashboard

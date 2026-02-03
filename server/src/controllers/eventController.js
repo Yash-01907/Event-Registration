@@ -115,15 +115,16 @@ const getEventById = async (req, res) => {
 };
 
 // Helper to check event access
-const checkEventAccess = (event, userId) => {
-  const isCoordinator = event.coordinators.some((c) => c.id === userId);
-  const isMain = event.mainCoordinatorId === userId;
+const checkEventAccess = (event, user) => {
+  if (user.role === "ADMIN") return true;
+  const isCoordinator = event.coordinators.some((c) => c.id === user.id);
+  const isMain = event.mainCoordinatorId === user.id;
   return isMain || isCoordinator;
 };
 
 // @desc    Update event details
 // @route   PUT /api/events/:id
-// @access  Private (Main Coordinator only)
+// @access  Private (Main Coordinator only or Admin)
 const updateEvent = async (req, res) => {
   const { name, date, description, location, fees, category, posterUrl } =
     req.body;
@@ -142,7 +143,7 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!checkEventAccess(event, req.user.id)) {
+    if (!checkEventAccess(event, req.user)) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });
@@ -170,7 +171,7 @@ const updateEvent = async (req, res) => {
 
 // @desc    Add student coordinator to event
 // @route   POST /api/events/:id/coordinator
-// @access  Private (Main Coordinator only)
+// @access  Private (Main Coordinator only or Admin)
 const addCoordinator = async (req, res) => {
   const { email } = req.body;
 
@@ -183,7 +184,7 @@ const addCoordinator = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.mainCoordinatorId !== req.user.id) {
+    if (event.mainCoordinatorId !== req.user.id && req.user.role !== "ADMIN") {
       return res
         .status(403)
         .json({ message: "Not authorized to add coordinators" });
@@ -249,7 +250,7 @@ const getCoordinatedEvents = async (req, res) => {
 
 // @desc    Toggle event publish status
 // @route   PATCH /api/events/:id/publish
-// @access  Private (Main Coordinator only)
+// @access  Private (Main Coordinator only or Admin)
 const togglePublishStatus = async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
@@ -265,7 +266,7 @@ const togglePublishStatus = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!checkEventAccess(event, req.user.id)) {
+    if (!checkEventAccess(event, req.user)) {
       return res
         .status(403)
         .json({ message: "Not authorized to update this event" });

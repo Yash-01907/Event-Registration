@@ -61,7 +61,7 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <ProtectedRoute allowedRoles={["FACULTY"]}>
+                  <ProtectedRoute allowedRoles={["FACULTY", "ADMIN"]}>
                     <FacultyDashboard />
                   </ProtectedRoute>
                 }
@@ -69,7 +69,9 @@ function App() {
               <Route
                 path="/dashboard/event/:id"
                 element={
-                  <ProtectedRoute allowedRoles={["FACULTY", "STUDENT"]}>
+                  <ProtectedRoute
+                    allowedRoles={["FACULTY", "STUDENT", "ADMIN"]}
+                  >
                     <ManageEvent />
                   </ProtectedRoute>
                 }
@@ -77,7 +79,9 @@ function App() {
               <Route
                 path="/coordinator-dashboard"
                 element={
-                  <ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}>
+                  <ProtectedRoute
+                    allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}
+                  >
                     <CoordinatorDashboard />
                   </ProtectedRoute>
                 }
@@ -85,7 +89,9 @@ function App() {
               <Route
                 path="/dashboard/event/:id/registrations"
                 element={
-                  <ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}>
+                  <ProtectedRoute
+                    allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}
+                  >
                     <EventRegistrations />
                   </ProtectedRoute>
                 }
@@ -93,7 +99,7 @@ function App() {
               <Route
                 path="/my-tickets"
                 element={
-                  <ProtectedRoute allowedRoles={["STUDENT"]}>
+                  <ProtectedRoute allowedRoles={["STUDENT", "ADMIN"]}>
                     <StudentDashboard />
                   </ProtectedRoute>
                 }

@@ -1,21 +1,31 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useNavigate, Link } from "react-router-dom";
-import {
-  Mail,
-  Lock,
-  User,
-  Loader2,
-  GraduationCap,
-  Phone,
-  FileDigit,
-  AlertCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import useAuthStore from "@/store/authStore";
-import { cn } from "@/lib/utils";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Calendar, Loader2 } from "lucide-react";
 
+// Define schema locally to incorporate specific constraints
 const registerSchema = z
   .object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -23,316 +33,306 @@ const registerSchema = z
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
+    confirmPassword: z.string(),
     phone: z
       .string()
       .min(10, { message: "Phone number must be at least 10 digits" }),
     role: z.enum(["STUDENT", "FACULTY"], { message: "Please select a role" }),
     rollNumber: z.string().optional(),
+    branch: z
+      .enum(["Automobile", "Computer", "Mechanical", "Electrical", "Civil"], {
+        message: "Please select a valid branch",
+      })
+      .optional(),
+    semester: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
   })
   .refine(
     (data) => {
-      if (data.role === "STUDENT" && !data.rollNumber) {
-        return false;
+      if (data.role === "STUDENT") {
+        if (!data.rollNumber) return false;
+        if (!data.branch) return false;
+        if (!data.semester) return false;
       }
       return true;
     },
     {
-      message: "Roll Number is required for Students",
+      message: "Roll Number, Branch, and Semester are required for Students",
       path: ["rollNumber"],
     },
   );
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register: registerUser, isLoading, error } = useAuthStore();
+  const { register: registerUser, isLoading } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
       role: "STUDENT",
+      rollNumber: "",
+      branch: "",
+      semester: "",
+      phone: "",
     },
   });
 
-  const selectedRole = watch("role");
+  const role = watch("role");
+  const branch = watch("branch");
+  const semester = watch("semester");
 
   const onSubmit = async (data) => {
+    const { confirmPassword, ...userData } = data;
+
     try {
-      const userData = await registerUser(data);
-      if (userData.role === "FACULTY") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
+      const result = await registerUser(userData);
+      // store typically returns user object on success or throws error
+      // adapting to check if it matches expectation
+      if (result) {
+        toast.success("Account created successfully!");
+        if (result.role === "FACULTY") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
       }
-    } catch (err) {
-      // Error is handled in store
+    } catch (error) {
+      // Error handled by store usually, but redundancy for safety
+      // toast.error("Registration failed");
+      console.error(error);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 bg-gray-50">
-
-      <div className="w-full max-w-md space-y-8 rounded-xl border border-gray-100 bg-white p-8 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold font-heading tracking-tight text-gray-900">
-            Create Account
-          </h2>
-          <p className="mt-2 text-sm text-gray-500">
-            Join Gdecfest to handle your events
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive text-center flex items-center justify-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            {error}
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <div className="relative mt-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <User
-                    className={cn(
-                      "h-5 w-5",
-                      errors.name ? "text-destructive" : "text-gray-400",
-                    )}
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  className={cn(
-                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
-                    errors.name
-                      ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-gray-300 focus:border-primary focus:ring-primary",
-                  )}
-                  {...register("name")}
-                />
-              </div>
+    <div className="w-full min-h-screen flex items-center justify-center pt-16 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <Link to="/" className="mx-auto mb-4 flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <Calendar className="h-6 w-6 text-primary-foreground" />
+            </div>
+          </Link>
+          <CardTitle className="text-2xl">Create an account</CardTitle>
+          <CardDescription>
+            Join GDEC Events to discover campus events
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input id="name" placeholder="John Doe" {...register("name")} />
               {errors.name && (
-                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <p className="text-sm text-destructive">
                   {errors.name.message}
                 </p>
               )}
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <div className="relative mt-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail
-                    className={cn(
-                      "h-5 w-5",
-                      errors.email ? "text-destructive" : "text-gray-400",
-                    )}
-                  />
-                </div>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className={cn(
-                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
-                    errors.email
-                      ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-gray-300 focus:border-primary focus:ring-primary",
-                  )}
-                  {...register("email")}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@gdec.edu"
+                {...register("email")}
+              />
               {errors.email && (
-                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <p className="text-sm text-destructive">
                   {errors.email.message}
                 </p>
               )}
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <div className="relative mt-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Phone
-                    className={cn(
-                      "h-5 w-5",
-                      errors.phone ? "text-destructive" : "text-gray-400",
-                    )}
-                  />
-                </div>
-                <input
-                  type="tel"
-                  placeholder="1234567890"
-                  className={cn(
-                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
-                    errors.phone
-                      ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-gray-300 focus:border-primary focus:ring-primary",
-                  )}
-                  {...register("phone")}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+91 98765 43210"
+                {...register("phone")}
+              />
               {errors.phone && (
-                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <p className="text-sm text-destructive">
                   {errors.phone.message}
                 </p>
               )}
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700">Role</label>
-              <div className="relative mt-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <GraduationCap
-                    className={cn(
-                      "h-5 w-5",
-                      errors.role ? "text-destructive" : "text-gray-400",
-                    )}
-                  />
-                </div>
-                <select
-                  className={cn(
-                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm appearance-none shadow-sm",
-                    errors.role
-                      ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-gray-300 focus:border-primary focus:ring-primary",
-                  )}
-                  {...register("role")}
-                >
-                  <option
-                    value="STUDENT"
-                    className="bg-white text-gray-900"
-                  >
-                    Student
-                  </option>
-                  <option
-                    value="FACULTY"
-                    className="bg-white text-gray-900"
-                  >
-                    Faculty Coordinator
-                  </option>
-                </select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">I am a</Label>
+              <Select
+                value={role}
+                onValueChange={(value) => setValue("role", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="STUDENT">Student</SelectItem>
+                  <SelectItem value="FACULTY">Faculty</SelectItem>
+                </SelectContent>
+              </Select>
               {errors.role && (
-                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <p className="text-sm text-destructive">
                   {errors.role.message}
                 </p>
               )}
             </div>
 
-            {selectedRole === "STUDENT" && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="text-sm font-medium text-gray-700">
-                  Roll Number
-                </label>
-                <div className="relative mt-1">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <FileDigit
-                      className={cn(
-                        "h-5 w-5",
-                        errors.rollNumber
-                          ? "text-destructive"
-                          : "text-gray-400",
-                      )}
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="e.g. 2023CS101"
-                    className={cn(
-                      "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
-                      errors.rollNumber
-                        ? "border-destructive focus:border-destructive focus:ring-destructive"
-                        : "border-gray-300 focus:border-primary focus:ring-primary",
-                    )}
+            {role === "STUDENT" && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2">
+                  <Label htmlFor="rollNumber">Roll Number</Label>
+                  <Input
+                    id="rollNumber"
+                    placeholder="CS2024001"
                     {...register("rollNumber")}
                   />
+                  {errors.rollNumber && (
+                    <p className="text-sm text-destructive">
+                      {errors.rollNumber.message}
+                    </p>
+                  )}
                 </div>
-                {errors.rollNumber && (
-                  <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.rollNumber.message}
-                  </p>
-                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="branch">Branch</Label>
+                    <Select
+                      value={branch}
+                      onValueChange={(value) => setValue("branch", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Branch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Automobile">Automobile</SelectItem>
+                        <SelectItem value="Computer">Computer</SelectItem>
+                        <SelectItem value="Mechanical">Mechanical</SelectItem>
+                        <SelectItem value="Electrical">Electrical</SelectItem>
+                        <SelectItem value="Civil">Civil</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.branch && (
+                      <p className="text-sm text-destructive">
+                        {errors.branch.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select
+                      value={semester}
+                      onValueChange={(value) => setValue("semester", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sem" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                          <SelectItem key={sem} value={sem.toString()}>
+                            {sem}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.semester && (
+                      <p className="text-sm text-destructive">
+                        {errors.semester.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative mt-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock
-                    className={cn(
-                      "h-5 w-5",
-                      errors.password ? "text-destructive" : "text-gray-400",
-                    )}
-                  />
-                </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className={cn(
-                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
-                    errors.password
-                      ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-gray-300 focus:border-primary focus:ring-primary",
-                  )}
-                  {...register("password")}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                {...register("password")}
+              />
               {errors.password && (
-                <p className="mt-1 text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <p className="text-sm text-destructive">
                   {errors.password.message}
                 </p>
               )}
             </div>
-          </div>
 
-          <div>
-            <Button type="submit" disabled={isLoading} className="w-full">
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                {...register("confirmPassword")}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="showPassword"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+                className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label
+                htmlFor="showPassword"
+                className="text-sm font-normal cursor-pointer text-muted-foreground"
+              >
+                Show password
+              </Label>
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating account...
                 </>
               ) : (
-                "Sign up"
+                "Create account"
               )}
             </Button>
-          </div>
-        </form>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-500">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </div>
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-medium text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   );
 }
