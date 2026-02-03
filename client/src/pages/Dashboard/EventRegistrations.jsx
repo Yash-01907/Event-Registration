@@ -46,30 +46,48 @@ export default function EventRegistrations() {
       reg.student.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const downloadCSV = () => {
+    if (!filteredRegistrations.length) return;
+
+    const headers = [
+      "Student Name",
+      "Roll Number",
+      "Email",
+      "Phone",
+      "Registration Type",
+      "Date",
+    ];
+    const csvContent = [
+      headers.join(","),
+      ...filteredRegistrations.map((reg) =>
+        [
+          `"${reg.student.name}"`,
+          `"${reg.student.rollNumber || ""}"`,
+          `"${reg.student.email}"`,
+          `"${reg.student.phone || ""}"`,
+          `"${reg.type}"`,
+          `"${formatDate(reg.createdAt)}"`,
+        ].join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `${event?.name || "Event"}_Registrations.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
-      <style>
-        {`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #printable-content, #printable-content * {
-              visibility: visible;
-            }
-            #printable-content {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-            .no-print {
-              display: none !important;
-            }
-          }
-        `}
-      </style>
-      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <Link
             to="/coordinator-dashboard"
@@ -89,9 +107,9 @@ export default function EventRegistrations() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => window.print()}>
+          <Button variant="outline" onClick={downloadCSV}>
             <Download className="mr-2 h-4 w-4" />
-            Export
+            Export CSV
           </Button>
           <ManualEntryModal eventId={id} onSuccess={fetchData} />
         </div>
@@ -106,21 +124,8 @@ export default function EventRegistrations() {
           {error}
         </div>
       ) : (
-        <div className="space-y-4" id="printable-content">
-          <div className="hidden print:block mb-6 text-center text-black">
-            <h1 className="text-2xl font-bold text-black border-b pb-2 mb-2">
-              Gdecfest Registration Report
-            </h1>
-            {event && (
-              <p className="text-lg">
-                Event: <strong>{event.name}</strong>
-              </p>
-            )}
-            <p className="text-sm text-gray-500">
-              Generated on: {new Date().toLocaleDateString()}
-            </p>
-          </div>
-          <div className="relative no-print">
+        <div className="space-y-4">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
@@ -131,10 +136,10 @@ export default function EventRegistrations() {
             />
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm overflow-hidden print:border-black print:bg-white print:text-black">
+          <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left print:text-black">
-                <thead className="bg-secondary/50 text-xs uppercase text-gray-400 font-semibold border-b border-white/10 print:bg-gray-100 print:text-black print:border-black">
+              <table className="w-full text-left">
+                <thead className="bg-secondary/50 text-xs uppercase text-gray-400 font-semibold border-b border-white/10">
                   <tr>
                     <th className="px-6 py-4">Student Name</th>
                     <th className="px-6 py-4">Roll Number</th>
@@ -143,7 +148,7 @@ export default function EventRegistrations() {
                     <th className="px-6 py-4 text-right">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 print:divide-gray-300">
+                <tbody className="divide-y divide-white/5">
                   {filteredRegistrations.length === 0 ? (
                     <tr>
                       <td
@@ -157,21 +162,19 @@ export default function EventRegistrations() {
                     filteredRegistrations.map((reg) => (
                       <tr
                         key={reg.id}
-                        className="hover:bg-white/5 transition-colors print:hover:bg-transparent"
+                        className="hover:bg-white/5 transition-colors"
                       >
                         <td className="px-6 py-4">
-                          <div className="font-medium text-white print:text-black">
+                          <div className="font-medium text-white">
                             {reg.student.name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-300 font-mono text-sm print:text-black">
+                        <td className="px-6 py-4 text-gray-300 font-mono text-sm">
                           {reg.student.rollNumber || "N/A"}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <div className="text-white print:text-black">
-                            {reg.student.email}
-                          </div>
-                          <div className="text-gray-500 text-xs print:text-gray-700">
+                          <div className="text-white">{reg.student.email}</div>
+                          <div className="text-gray-500 text-xs">
                             {reg.student.phone || "N/A"}
                           </div>
                         </td>
@@ -179,14 +182,14 @@ export default function EventRegistrations() {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                               reg.type === "MANUAL"
-                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20 print:border-amber-500 print:text-amber-700"
-                                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 print:border-emerald-500 print:text-emerald-700"
+                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                             }`}
                           >
                             {reg.type}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-gray-400 print:text-black">
+                        <td className="px-6 py-4 text-right text-sm text-gray-400">
                           {formatDate(reg.createdAt)}
                         </td>
                       </tr>
@@ -195,7 +198,7 @@ export default function EventRegistrations() {
                 </tbody>
               </table>
             </div>
-            <div className="px-6 py-4 border-t border-white/10 text-xs text-gray-500 bg-secondary/30 print:border-black print:bg-transparent print:text-black">
+            <div className="px-6 py-4 border-t border-white/10 text-xs text-gray-500 bg-secondary/30">
               Total Registrations: {filteredRegistrations.length}
             </div>
           </div>

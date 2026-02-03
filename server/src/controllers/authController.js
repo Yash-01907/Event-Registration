@@ -119,4 +119,94 @@ const getUserProfile = async (req, res) => {
   res.status(200).json(user);
 };
 
-export { registerUser, loginUser, logoutUser, getUserProfile };
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+  });
+
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone;
+    user.rollNumber = req.body.rollNumber || user.rollNumber;
+    user.branch = req.body.branch || user.branch;
+
+    if (req.body.email && req.body.email !== user.email) {
+      const emailExists = await prisma.user.findUnique({
+        where: { email: req.body.email },
+      });
+      if (emailExists) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        rollNumber: user.rollNumber,
+        branch: user.branch,
+      },
+      include: {
+        coordinatedEvents: {
+          select: { id: true },
+        },
+      },
+    });
+
+    res.json({
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      rollNumber: updatedUser.rollNumber,
+      branch: updatedUser.branch,
+      phone: updatedUser.phone,
+      coordinatedEvents: updatedUser.coordinatedEvents,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+};
+
+// @desc    Change user password
+// @route   PUT /api/auth/change-password
+// @access  Private
+const changeUserPassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+  });
+
+  if (user && (await bcrypt.compare(currentPassword, user.password))) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    res.json({ message: "Password updated successfully" });
+  } else {
+    res.status(401).json({ message: "Invalid current password" });
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  updateUserProfile,
+  changeUserPassword,
+};

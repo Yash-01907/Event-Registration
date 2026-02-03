@@ -74,15 +74,14 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 bg-gray-50">
 
-      <div className="w-full max-w-md space-y-8 rounded-xl border border-white/10 bg-background/60 p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-md space-y-8 rounded-xl border border-gray-100 bg-white p-8 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center">
-          <h2 className="text-3xl font-bold font-heading tracking-tight text-white">
+          <h2 className="text-3xl font-bold font-heading tracking-tight text-gray-900">
             Create Account
           </h2>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-gray-500">
             Join Gdecfest to handle your events
           </p>
         </div>
@@ -97,7 +96,7 @@ export default function Register() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-300">
+              <label className="text-sm font-medium text-gray-700">
                 Full Name
               </label>
               <div className="relative mt-1">
@@ -105,7 +104,7 @@ export default function Register() {
                   <User
                     className={cn(
                       "h-5 w-5",
-                      errors.name ? "text-destructive" : "text-gray-500",
+                      errors.name ? "text-destructive" : "text-gray-400",
                     )}
                   />
                 </div>
@@ -113,10 +112,10 @@ export default function Register() {
                   type="text"
                   placeholder="John Doe"
                   className={cn(
-                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
                     errors.name
                       ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-white/10 focus:border-primary focus:ring-primary",
+                      : "border-gray-300 focus:border-primary focus:ring-primary",
                   )}
                   {...register("name")}
                 />
@@ -130,7 +129,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300">
+              <label className="text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <div className="relative mt-1">
@@ -138,7 +137,7 @@ export default function Register() {
                   <Mail
                     className={cn(
                       "h-5 w-5",
-                      errors.email ? "text-destructive" : "text-gray-500",
+                      errors.email ? "text-destructive" : "text-gray-400",
                     )}
                   />
                 </div>
@@ -146,10 +145,10 @@ export default function Register() {
                   type="email"
                   placeholder="you@example.com"
                   className={cn(
-                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
                     errors.email
                       ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-white/10 focus:border-primary focus:ring-primary",
+                      : "border-gray-300 focus:border-primary focus:ring-primary",
                   )}
                   {...register("email")}
                 />
@@ -163,7 +162,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300">
+              <label className="text-sm font-medium text-gray-700">
                 Phone Number
               </label>
               <div className="relative mt-1">
@@ -171,7 +170,7 @@ export default function Register() {
                   <Phone
                     className={cn(
                       "h-5 w-5",
-                      errors.phone ? "text-destructive" : "text-gray-500",
+                      errors.phone ? "text-destructive" : "text-gray-400",
                     )}
                   />
                 </div>
@@ -179,10 +178,10 @@ export default function Register() {
                   type="tel"
                   placeholder="1234567890"
                   className={cn(
-                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
                     errors.phone
                       ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-white/10 focus:border-primary focus:ring-primary",
+                      : "border-gray-300 focus:border-primary focus:ring-primary",
                   )}
                   {...register("phone")}
                 />
@@ -196,34 +195,34 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300">Role</label>
+              <label className="text-sm font-medium text-gray-700">Role</label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <GraduationCap
                     className={cn(
                       "h-5 w-5",
-                      errors.role ? "text-destructive" : "text-gray-500",
+                      errors.role ? "text-destructive" : "text-gray-400",
                     )}
                   />
                 </div>
                 <select
                   className={cn(
-                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm appearance-none",
+                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm appearance-none shadow-sm",
                     errors.role
                       ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-white/10 focus:border-primary focus:ring-primary",
+                      : "border-gray-300 focus:border-primary focus:ring-primary",
                   )}
                   {...register("role")}
                 >
                   <option
                     value="STUDENT"
-                    className="bg-background text-foreground"
+                    className="bg-white text-gray-900"
                   >
                     Student
                   </option>
                   <option
                     value="FACULTY"
-                    className="bg-background text-foreground"
+                    className="bg-white text-gray-900"
                   >
                     Faculty Coordinator
                   </option>
@@ -239,7 +238,7 @@ export default function Register() {
 
             {selectedRole === "STUDENT" && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="text-sm font-medium text-gray-300">
+                <label className="text-sm font-medium text-gray-700">
                   Roll Number
                 </label>
                 <div className="relative mt-1">
@@ -249,7 +248,7 @@ export default function Register() {
                         "h-5 w-5",
                         errors.rollNumber
                           ? "text-destructive"
-                          : "text-gray-500",
+                          : "text-gray-400",
                       )}
                     />
                   </div>
@@ -257,10 +256,10 @@ export default function Register() {
                     type="text"
                     placeholder="e.g. 2023CS101"
                     className={cn(
-                      "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                      "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
                       errors.rollNumber
                         ? "border-destructive focus:border-destructive focus:ring-destructive"
-                        : "border-white/10 focus:border-primary focus:ring-primary",
+                        : "border-gray-300 focus:border-primary focus:ring-primary",
                     )}
                     {...register("rollNumber")}
                   />
@@ -275,7 +274,7 @@ export default function Register() {
             )}
 
             <div>
-              <label className="text-sm font-medium text-gray-300">
+              <label className="text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="relative mt-1">
@@ -283,7 +282,7 @@ export default function Register() {
                   <Lock
                     className={cn(
                       "h-5 w-5",
-                      errors.password ? "text-destructive" : "text-gray-500",
+                      errors.password ? "text-destructive" : "text-gray-400",
                     )}
                   />
                 </div>
@@ -291,10 +290,10 @@ export default function Register() {
                   type="password"
                   placeholder="••••••••"
                   className={cn(
-                    "block w-full rounded-md border bg-secondary/50 pl-10 pr-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-colors sm:text-sm",
+                    "block w-full rounded-md border bg-white pl-10 pr-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 transition-colors sm:text-sm shadow-sm",
                     errors.password
                       ? "border-destructive focus:border-destructive focus:ring-destructive"
-                      : "border-white/10 focus:border-primary focus:ring-primary",
+                      : "border-gray-300 focus:border-primary focus:ring-primary",
                   )}
                   {...register("password")}
                 />
@@ -323,7 +322,7 @@ export default function Register() {
         </form>
 
         <div className="text-center">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             Already have an account?{" "}
             <Link
               to="/login"

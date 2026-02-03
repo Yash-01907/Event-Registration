@@ -29,10 +29,10 @@ export default function CoordinatorDashboard() {
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-heading text-white">
+          <h1 className="text-3xl font-bold font-heading text-gray-900">
             Coordinator Dashboard
           </h1>
-          <p className="text-gray-400 mt-1">Events assigned to you</p>
+          <p className="text-gray-500 mt-1">Events assigned to you</p>
         </div>
       </div>
 
@@ -45,21 +45,21 @@ export default function CoordinatorDashboard() {
           Error loading events: {error}
         </div>
       ) : events.length === 0 ? (
-        <div className="text-center py-20 bg-secondary/30 rounded-lg border border-white/5 border-dashed">
-          <Calendar className="h-12 w-12 mx-auto text-gray-500 mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">
+        <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
+          <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             No assigned events
           </h3>
-          <p className="text-gray-400">
+          <p className="text-gray-500">
             You haven't been assigned to any events yet.
           </p>
         </div>
       ) : (
         <div className="grid gap-6">
-          <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm overflow-hidden">
+          <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-secondary/50 text-xs uppercase text-gray-400 font-semibold border-b border-white/10">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4">Event Name</th>
                     <th className="px-6 py-4">Category</th>
@@ -68,14 +68,14 @@ export default function CoordinatorDashboard() {
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-gray-100">
                   {events.map((event) => (
                     <tr
                       key={event.id}
-                      className="hover:bg-white/5 transition-colors"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-medium text-white">
+                        <div className="font-medium text-gray-900">
                           {event.name}
                         </div>
                         <div className="text-xs text-gray-500 truncate max-w-[200px]">
@@ -87,24 +87,24 @@ export default function CoordinatorDashboard() {
                           className={cn(
                             "px-2.5 py-1 rounded-full text-xs font-medium border",
                             event.category === "TECH" &&
-                              "text-indigo-400 bg-indigo-950/30 border-indigo-800",
+                              "text-indigo-700 bg-indigo-50 border-indigo-100",
                             event.category === "CULTURAL" &&
-                              "text-amber-400 bg-amber-950/30 border-amber-800",
+                              "text-amber-700 bg-amber-50 border-amber-100",
                             event.category === "SPORTS" &&
-                              "text-emerald-400 bg-emerald-950/30 border-emerald-800",
+                              "text-emerald-700 bg-emerald-50 border-emerald-100",
                           )}
                         >
                           {event.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-700">
                         {event.date
                           ? new Date(event.date).toLocaleDateString()
                           : "TBA"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-700">
                         <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-bold">
                             {event.mainCoordinator?.name?.charAt(0) || "F"}
                           </div>
                           <span>{event.mainCoordinator?.name}</span>

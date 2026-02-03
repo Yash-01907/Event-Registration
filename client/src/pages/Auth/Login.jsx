@@ -41,31 +41,17 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      {/* Background decoration - reusing from Landing but simplified */}
-      <div
-        className="absolute top-0 left-1/2 -z-10 -translate-x-1/2 blur-3xl opacity-20"
-        aria-hidden="true"
-      >
-        <div
-          className="aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-primary to-[#ff80b5] opacity-30"
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-        ></div>
-      </div>
-
-      <div className="w-full max-w-md space-y-8 rounded-xl border border-white/10 bg-background/60 p-8 shadow-2xl backdrop-blur-xl">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 bg-gray-50">
+      <div className="w-full max-w-md space-y-8 rounded-xl border border-gray-100 bg-white p-8 shadow-xl">
         <div className="text-center">
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-white font-heading">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 font-heading">
             Welcome back
           </h2>
-          <p className="mt-2 text-sm text-gray-400">Sign in to your account</p>
+          <p className="mt-2 text-sm text-gray-500">Sign in to your account</p>
         </div>
 
         {error && (
-          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/20 flex items-center gap-2">
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20 flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             {error}
           </div>
@@ -91,10 +77,10 @@ export default function Login() {
                   type="email"
                   autoComplete="email"
                   className={cn(
-                    "block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
+                    "block w-full rounded-md border-0 bg-white py-2 pl-10 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
                     errors.email
                       ? "ring-destructive focus:ring-destructive"
-                      : "ring-white/10 focus:ring-primary",
+                      : "ring-gray-300 focus:ring-primary",
                   )}
                   placeholder="Email address"
                   {...register("email")}
@@ -126,10 +112,10 @@ export default function Login() {
                   type="password"
                   autoComplete="current-password"
                   className={cn(
-                    "block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-white shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
+                    "block w-full rounded-md border-0 bg-white py-2 pl-10 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6",
                     errors.password
                       ? "ring-destructive focus:ring-destructive"
-                      : "ring-white/10 focus:ring-primary",
+                      : "ring-gray-300 focus:ring-primary",
                   )}
                   placeholder="Password"
                   {...register("password")}
@@ -158,7 +144,7 @@ export default function Login() {
           </div>
         </form>
 
-        <p className="text-center text-sm text-gray-400">
+        <p className="text-center text-sm text-gray-500">
           Not a member?{" "}
           <Link
             to="/register"

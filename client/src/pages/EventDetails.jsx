@@ -169,10 +169,10 @@ export default function EventDetails() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 About Event
               </h2>
-              <div className="prose prose-invert max-w-none text-gray-300">
+              <div className="prose prose-gray max-w-none text-gray-600">
                 <p className="whitespace-pre-wrap leading-relaxed">
                   {event.description || "No description provided."}
                 </p>
@@ -180,20 +180,20 @@ export default function EventDetails() {
             </section>
 
             {/* Coordinator Info */}
-            <section className="bg-white/5 rounded-xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <section className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
                 Event Coordinator
               </h3>
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                   {event.mainCoordinator?.name?.charAt(0) || "F"}
                 </div>
                 <div>
-                  <div className="font-medium text-white">
+                  <div className="font-medium text-gray-900">
                     {event.mainCoordinator?.name || "Faculty Coordinator"}
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-gray-500">
                     {event.mainCoordinator?.email}
                   </div>
                 </div>
@@ -204,17 +204,17 @@ export default function EventDetails() {
           {/* Sidebar / Register Action */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              <div className="rounded-xl border border-white/10 bg-secondary/30 p-6 backdrop-blur-sm">
+              <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-gray-400">Registration Fee</span>
-                  <div className="flex items-center text-2xl font-bold text-white">
+                  <span className="text-gray-500">Registration Fee</span>
+                  <div className="flex items-center text-2xl font-bold text-gray-900">
                     {event.fees > 0 ? (
                       <>
                         <IndianRupee className="h-6 w-6" />
                         {event.fees}
                       </>
                     ) : (
-                      <span className="text-emerald-400">Free</span>
+                      <span className="text-emerald-600">Free</span>
                     )}
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function EventDetails() {
                 >
                   {isRegistered ? (
                     <>
-                      <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
+                      <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-600" />
                       Registered
                     </>
                   ) : isSoldOut ? (
@@ -266,7 +266,7 @@ export default function EventDetails() {
               <div className="text-center">
                 <Button
                   variant="ghost"
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-500 hover:text-gray-900"
                 >
                   <Share2 className="mr-2 h-4 w-4" />
                   Share Event

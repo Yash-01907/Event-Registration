@@ -33,10 +33,10 @@ export default function StudentDashboard() {
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-heading text-white">
+        <h1 className="text-3xl font-bold font-heading text-gray-900">
           My Tickets
         </h1>
-        <p className="text-gray-400 mt-1">Events you have registered for</p>
+        <p className="text-gray-500 mt-1">Events you have registered for</p>
       </div>
 
       {isLoading ? (
@@ -48,18 +48,16 @@ export default function StudentDashboard() {
           Error loading tickets: {error}
         </div>
       ) : registrations.length === 0 ? (
-        <div className="text-center py-20 bg-secondary/30 rounded-lg border border-white/5 border-dashed">
-          <Ticket className="h-12 w-12 mx-auto text-gray-500 mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">
+        <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
+          <Ticket className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             No tickets found
           </h3>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-500 mb-6">
             You haven't registered for any events yet.
           </p>
           <Link
-            to="/events" // Or "/" if events page isn't ready, user said "Events Page (Coming Soon)" earlier but now asked for "/events/:id".
-            // Actually, I can link to Home if Events list page isn't strictly defined, but usually "Events" is safe expectation.
-            // Wait, previous file had Events Page Coming Soon. I'll stick to a generic "Explore Events" button to Home for now or just generic.
+            to="/events"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
           >
             Explore Events
@@ -70,42 +68,43 @@ export default function StudentDashboard() {
           {registrations.map((reg) => (
             <div
               key={reg.id}
-              className="bg-background/60 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:border-primary/50 transition-colors group relative flex flex-col"
+              className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow group relative flex flex-col shadow-sm"
             >
               {/* Event Image Top Stripe */}
-              <div className="h-24 bg-secondary/50 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
-                {reg.event.posterUrl && (
+              <div className="h-24 bg-gray-100 relative overflow-hidden">
+                {reg.event.posterUrl ? (
                   <img
                     src={reg.event.posterUrl}
                     alt=""
-                    className="w-full h-full object-cover opacity-60"
+                    className="w-full h-full object-cover opacity-90"
                   />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-r from-gray-100 to-gray-200" />
                 )}
               </div>
 
               <div className="p-6 pt-2 flex-grow flex flex-col">
                 {/* Date Badge */}
-                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono border border-white/10 z-20">
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono border border-gray-200 shadow-sm z-20 text-gray-900">
                   {new Date(reg.event.date).toLocaleDateString()}
                 </div>
 
                 <h3
-                  className="text-xl font-bold text-white mb-2 line-clamp-1"
+                  className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 mt-2"
                   title={reg.event.name}
                 >
                   {reg.event.name}
                 </h3>
 
-                <div className="space-y-2 text-sm text-gray-400 mb-6 flex-grow">
+                <div className="space-y-2 text-sm text-gray-500 mb-6 flex-grow">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary/70" />
+                    <MapPin className="h-4 w-4 text-gray-400" />
                     <span className="truncate">
                       {reg.event.location || "Venue TBA"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 bg-primary/20 rounded-full flex items-center justify-center text-[10px] text-primary">
+                    <div className="h-4 w-4 bg-gray-100 rounded-full flex items-center justify-center text-[10px] text-gray-600">
                       ₹
                     </div>
                     <span>
@@ -115,17 +114,17 @@ export default function StudentDashboard() {
                 </div>
 
                 {/* QR Placeholder */}
-                <div className="mt-auto border-t border-dashed border-white/10 pt-4 flex items-center justify-between">
+                <div className="mt-auto border-t border-dashed border-gray-200 pt-4 flex items-center justify-between">
                   <div className="text-xs text-gray-500">
-                    <div className="uppercase tracking-wider font-semibold mb-1">
+                    <div className="uppercase tracking-wider font-semibold mb-1 text-gray-400">
                       Ticket ID
                     </div>
-                    <div className="font-mono text-white/70">
+                    <div className="font-mono text-gray-700 bg-gray-50 px-1 rounded">
                       {reg.id.substring(0, 8)}...
                     </div>
                   </div>
-                  <div className="bg-white p-1 rounded-md">
-                    <QrCode className="h-10 w-10 text-black" />
+                  <div className="bg-white p-1 rounded-md border border-gray-100">
+                    <QrCode className="h-10 w-10 text-gray-900" />
                   </div>
                 </div>
               </div>

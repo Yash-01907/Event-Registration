@@ -5,6 +5,8 @@ import {
   loginUser,
   logoutUser,
   getUserProfile,
+  updateUserProfile,
+  changeUserPassword,
 } from "../controllers/authController.js";
 
 import { body } from "express-validator";
@@ -30,6 +32,22 @@ const loginValidation = [
   body("password").exists().withMessage("Password is required"),
 ];
 
+const updateProfileValidation = [
+  body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
+  body("email").optional().isEmail().withMessage("Invalid email address"),
+  body("phone")
+    .optional()
+    .isLength({ min: 10 })
+    .withMessage("Phone number must be at least 10 digits"),
+];
+
+const changePasswordValidation = [
+  body("currentPassword").exists().withMessage("Current password is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters"),
+];
+
 router.post(
   "/register",
   authLimiter,
@@ -39,5 +57,17 @@ router.post(
 router.post("/login", authLimiter, validate(loginValidation), loginUser);
 router.post("/logout", logoutUser);
 router.get("/profile", protect, getUserProfile);
+router.put(
+  "/profile",
+  protect,
+  validate(updateProfileValidation),
+  updateUserProfile,
+);
+router.put(
+  "/change-password",
+  protect,
+  validate(changePasswordValidation),
+  changeUserPassword,
+);
 
 export default router;

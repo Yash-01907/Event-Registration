@@ -16,10 +16,12 @@ import {
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import useAuthStore from "@/store/authStore";
 
 export default function ManageEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,15 +29,19 @@ export default function ManageEvent() {
   const [coordEmail, setCoordEmail] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  // ... (rest of hook calls)
+
   const {
     register,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
   } = useForm();
 
+  // ... fetchEvent ...
+
   const fetchEvent = useCallback(async () => {
+    // ... implementation
     try {
       const response = await api.get(`/events/${id}`);
       setEvent(response.data);
@@ -53,6 +59,7 @@ export default function ManageEvent() {
       setValue("description", response.data.description);
       setLoading(false);
     } catch (error) {
+      // ... error handling
       console.error("Failed to fetch event", error);
       setMessage({ type: "error", text: "Failed to load event details" });
       setLoading(false);
@@ -64,6 +71,7 @@ export default function ManageEvent() {
   }, [fetchEvent]);
 
   const onUpdateEvent = async (data) => {
+    // ... implementation
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
@@ -83,6 +91,14 @@ export default function ManageEvent() {
   const onAddCoordinator = async (e) => {
     e.preventDefault();
     if (!coordEmail) return;
+
+    if (user && coordEmail === user.email) {
+      setMessage({
+        type: "error",
+        text: "You cannot add yourself as a coordinator",
+      });
+      return;
+    }
 
     setAddingCoord(true);
     setMessage({ type: "", text: "" });
@@ -115,7 +131,7 @@ export default function ManageEvent() {
         <Button
           variant="ghost"
           onClick={() => navigate("/dashboard")}
-          className="gap-2 text-gray-400 hover:text-white"
+          className="gap-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Dashboard
         </Button>
@@ -134,7 +150,7 @@ export default function ManageEvent() {
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold font-heading text-white">
+              <h2 className="text-xl font-bold font-heading text-foreground">
                 Edit Event Details
               </h2>
               <span
@@ -165,11 +181,11 @@ export default function ManageEvent() {
             <form onSubmit={handleSubmit(onUpdateEvent)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Event Name
                   </label>
                   <input
-                    className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     {...register("name", { required: "Required" })}
                   />
                   {errors.name && (
@@ -179,11 +195,11 @@ export default function ManageEvent() {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Category
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     {...register("category")}
                   >
                     <option value="TECH" className="bg-background">
@@ -201,27 +217,27 @@ export default function ManageEvent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Date & Time
                   </label>
                   <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <input
                       type="datetime-local"
-                      className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       {...register("date")}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Fees (₹)
                   </label>
                   <div className="relative mt-1">
-                    <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                    <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <input
                       type="number"
-                      className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       {...register("fees")}
                     />
                   </div>
@@ -229,25 +245,25 @@ export default function ManageEvent() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-300">
+                <label className="text-sm font-medium text-muted-foreground">
                   Venue
                 </label>
                 <div className="relative mt-1">
-                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
-                    className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-10 pr-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     {...register("location")}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-300">
+                <label className="text-sm font-medium text-muted-foreground">
                   Description
                 </label>
                 <textarea
                   rows="4"
-                  className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   {...register("description")}
                 />
               </div>
@@ -267,24 +283,24 @@ export default function ManageEvent() {
           <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
             <div className="flex items-center gap-2 mb-6">
               <Users className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold font-heading text-white">
+              <h2 className="text-lg font-bold font-heading text-foreground">
                 Coordinators
               </h2>
             </div>
 
             <form onSubmit={onAddCoordinator} className="mb-6">
-              <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Add Student Coordinator
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     type="email"
                     placeholder="student@example.com"
                     value={coordEmail}
                     onChange={(e) => setCoordEmail(e.target.value)}
-                    className="block w-full rounded-md border border-white/10 bg-secondary/50 pl-9 pr-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <Button
@@ -302,20 +318,20 @@ export default function ManageEvent() {
             </form>
 
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Current Team
               </h3>
 
               {/* Main Coordinator */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
                 <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
                   {event.mainCoordinator?.name?.charAt(0) || "F"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {event.mainCoordinator?.name}
                   </p>
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     Faculty (Owner)
                   </p>
                 </div>
@@ -325,16 +341,16 @@ export default function ManageEvent() {
               {event.coordinators?.map((coord) => (
                 <div
                   key={coord.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
                 >
-                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-gray-300 text-xs font-bold">
+                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground text-xs font-bold">
                     {coord.name?.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {coord.name}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {coord.email}
                     </p>
                   </div>
@@ -342,7 +358,7 @@ export default function ManageEvent() {
               ))}
 
               {(!event.coordinators || event.coordinators.length === 0) && (
-                <p className="text-sm text-gray-500 italic text-center py-4">
+                <p className="text-sm text-muted-foreground italic text-center py-4">
                   No student coordinators assigned yet.
                 </p>
               )}

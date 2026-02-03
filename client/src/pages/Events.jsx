@@ -27,10 +27,10 @@ export default function Events() {
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold font-heading text-white mb-4">
+        <h1 className="text-4xl font-bold font-heading text-gray-900 mb-4">
           Discover Events
         </h1>
-        <p className="text-gray-400 max-w-2xl mx-auto">
+        <p className="text-gray-500 max-w-2xl mx-auto">
           Explore the latest competitions, workshops, and cultural fests
           happening on campus.
         </p>
@@ -40,7 +40,7 @@ export default function Events() {
       <div
         role="search"
         aria-label="Event filters"
-        className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center bg-secondary/30 p-4 rounded-xl border border-white/5"
+        className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100"
       >
         {/* Category Pills */}
         <div
@@ -58,8 +58,8 @@ export default function Events() {
               className={cn(
                 "px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border",
                 selectedCategory === cat
-                  ? "bg-primary text-white border-primary"
-                  : "bg-background/50 text-gray-400 border-white/10 hover:border-primary/50 hover:text-white",
+                  ? "bg-gray-900 text-white border-gray-900"
+                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-900",
               )}
             >
               {cat === "ALL" ? "All Events" : cat}
@@ -77,7 +77,7 @@ export default function Events() {
             type="text"
             placeholder="Search events..."
             aria-label="Search events"
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-background/50 border border-white/10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-white placeholder:text-gray-500"
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-gray-900 placeholder:text-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -90,7 +90,7 @@ export default function Events() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="border border-white/10 rounded-xl p-6 space-y-4"
+                className="border border-gray-100 rounded-xl p-6 space-y-4"
               >
                 <Skeleton className="h-48 w-full" />
                 <Skeleton className="h-4 w-3/4" />
@@ -103,12 +103,12 @@ export default function Events() {
             Error loading events: {error.message || "Failed to fetch events"}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-20 bg-secondary/30 rounded-lg border border-white/5 border-dashed">
-            <Calendar className="h-12 w-12 mx-auto text-gray-500 mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">
+          <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
+            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               No events found
             </h3>
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               {searchTerm || selectedCategory !== "ALL"
                 ? "Try adjusting your filters"
                 : "Check back later for new events!"}
@@ -119,35 +119,34 @@ export default function Events() {
             {filteredEvents.map((event) => (
               <div
                 key={event.id}
-                className="group bg-background/60 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.3)] flex flex-col h-full"
+                className="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
               >
                 {/* Image / Banner */}
-                <div className="h-48 bg-secondary/50 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
+                <div className="h-48 bg-gray-100 relative overflow-hidden">
                   {/* Default Pattern or Image */}
                   {event.posterUrl ? (
                     <img
                       src={event.posterUrl}
                       alt={event.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600 bg-linear-to-br from-gray-800 to-gray-900">
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
                       <Calendar className="h-12 w-12 opacity-20" />
                     </div>
                   )}
                   <div className="absolute top-4 right-4 z-20">
                     <span
                       className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-bold border backdrop-blur-md",
+                        "px-2.5 py-1 rounded-full text-xs font-bold border backdrop-blur-md shadow-sm",
                         event.category === "TECH" &&
-                          "text-indigo-300 bg-indigo-950/50 border-indigo-500/30",
+                          "text-indigo-700 bg-indigo-50/90 border-indigo-200",
                         event.category === "CULTURAL" &&
-                          "text-amber-300 bg-amber-950/50 border-amber-500/30",
+                          "text-amber-700 bg-amber-50/90 border-amber-200",
                         event.category === "SPORTS" &&
-                          "text-emerald-300 bg-emerald-950/50 border-emerald-500/30",
+                          "text-emerald-700 bg-emerald-50/90 border-emerald-200",
                         !event.category &&
-                          "text-gray-300 bg-gray-950/50 border-gray-500/30",
+                          "text-gray-700 bg-gray-50/90 border-gray-200",
                       )}
                     >
                       {event.category || "EVENT"}
@@ -167,22 +166,22 @@ export default function Events() {
                         })
                       : "Date TBA"}
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                     {event.name}
                   </h3>
-                  <p className="text-gray-400 text-sm line-clamp-2 mb-4 flex-grow">
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-grow">
                     {event.description || "No description provided."}
                   </p>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4 text-primary/70" />
+                      <MapPin className="h-4 w-4 text-gray-400" />
                       <span className="truncate max-w-[100px]">
                         {event.location || "TBA"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 ml-auto">
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-gray-900">
                         {event.fees > 0 ? `₹${event.fees}` : "Free"}
                       </span>
                     </div>
@@ -191,7 +190,7 @@ export default function Events() {
                   <Link
                     to={`/events/${event.id}`}
                     aria-label={`View details for ${event.name}`}
-                    className="w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 text-center text-sm font-medium text-white transition-all flex items-center justify-center gap-2 group/btn"
+                    className="w-full py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-center text-sm font-medium text-white transition-all flex items-center justify-center gap-2 group/btn"
                   >
                     View Details
                     <ArrowRight

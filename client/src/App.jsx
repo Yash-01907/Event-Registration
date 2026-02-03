@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
@@ -12,6 +13,7 @@ import EventRegistrations from "@/pages/Dashboard/EventRegistrations";
 import StudentDashboard from "@/pages/Dashboard/StudentDashboard";
 import EventDetails from "@/pages/EventDetails";
 import Events from "@/pages/Events";
+import Profile from "@/pages/Profile";
 
 import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
 import useAuthStore from "@/store/authStore";
@@ -96,8 +98,19 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}
+                  >
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </main>
+          <Footer />
           <Toaster richColors position="top-right" theme="dark" />
         </div>
       </Router>

@@ -73,6 +73,41 @@ const useAuthStore = create((set) => ({
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
+
+  // Update Profile
+  updateProfile: async (userData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.put("/auth/profile", userData);
+      set({
+        user: response.data,
+        isLoading: false,
+      });
+      return response.data;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Profile update failed",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  // Change Password
+  changePassword: async (passwordData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.put("/auth/change-password", passwordData);
+      set({ isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Password change failed",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
 }));
 
 export default useAuthStore;

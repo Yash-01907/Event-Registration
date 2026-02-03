@@ -44,6 +44,11 @@ const getEvents = async (req, res) => {
             email: true,
           },
         },
+        _count: {
+          select: {
+            registrations: true,
+          },
+        },
       },
       orderBy: {
         date: "asc",
