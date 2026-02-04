@@ -27,6 +27,7 @@ export default function ManageEvent() {
   const [saving, setSaving] = useState(false);
   const [addingCoord, setAddingCoord] = useState(false);
   const [coordEmail, setCoordEmail] = useState("");
+  const [questions, setQuestions] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   // ... (rest of hook calls)
@@ -35,8 +36,11 @@ export default function ManageEvent() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm();
+
+  const isTeamEvent = watch("isTeamEvent");
 
   // ... fetchEvent ...
 
@@ -57,6 +61,15 @@ export default function ManageEvent() {
       setValue("fees", response.data.fees);
       setValue("location", response.data.location);
       setValue("description", response.data.description);
+      setValue("isTeamEvent", response.data.isTeamEvent);
+      setValue("minTeamSize", response.data.minTeamSize);
+      setValue("maxTeamSize", response.data.maxTeamSize);
+      // For formConfig, we might need a local state if we want a complex builder,
+      // but for now let's use a simple JSON editor concept or helper state.
+      // Let's rely on a separate state for questions to manage 'Add/Remove' easily
+      if (response.data.formConfig) {
+        setQuestions(response.data.formConfig);
+      }
       setLoading(false);
     } catch (error) {
       // ... error handling
@@ -75,7 +88,7 @@ export default function ManageEvent() {
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
-      await api.put(`/events/${id}`, data);
+      await api.put(`/events/${id}`, { ...data, formConfig: questions });
       setMessage({ type: "success", text: "Event updated successfully" });
       fetchEvent(); // Refresh data
     } catch (error) {
@@ -266,6 +279,159 @@ export default function ManageEvent() {
                   className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   {...register("description")}
                 />
+              </div>
+
+              {/* Team Event Settings */}
+              <div className="p-4 rounded-lg bg-card border border-border space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="edit-isTeamEvent"
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    {...register("isTeamEvent")}
+                  />
+                  <label
+                    htmlFor="edit-isTeamEvent"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    This is a Team Event
+                  </label>
+                </div>
+
+                {isTeamEvent && (
+                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Min Team Size
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        {...register("minTeamSize", {
+                          required: isTeamEvent
+                            ? "Min team size is required"
+                            : false,
+                          min: {
+                            value: 1,
+                            message: "Min size must be at least 1",
+                          },
+                        })}
+                      />
+                      {errors.minTeamSize && (
+                        <p className="mt-1 text-xs text-destructive">
+                          {errors.minTeamSize.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Max Team Size
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        {...register("maxTeamSize", {
+                          required: isTeamEvent
+                            ? "Max team size is required"
+                            : false,
+                          min: {
+                            value: 1,
+                            message: "Max size must be at least 1",
+                          },
+                        })}
+                      />
+                      {errors.maxTeamSize && (
+                        <p className="mt-1 text-xs text-destructive">
+                          {errors.maxTeamSize.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Custom Questions Builder */}
+              <div className="p-4 rounded-lg bg-card border border-border space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-medium text-foreground">
+                    Registration Questions
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setQuestions([
+                        ...questions,
+                        { label: "", type: "text", required: false },
+                      ])
+                    }
+                    className="text-xs h-8"
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Add Question
+                  </Button>
+                </div>
+
+                {questions.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">
+                    No custom questions added.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {questions.map((q, index) => (
+                      <div
+                        key={index}
+                        className="flex gap-2 items-start p-3 bg-background/50 rounded-md border border-border"
+                      >
+                        <div className="flex-1 space-y-2">
+                          <input
+                            placeholder="Question (e.g., GitHub Handle)"
+                            value={q.label}
+                            onChange={(e) => {
+                              const newQuestions = [...questions];
+                              newQuestions[index].label = e.target.value;
+                              setQuestions(newQuestions);
+                            }}
+                            className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <input
+                                type="checkbox"
+                                checked={q.required}
+                                onChange={(e) => {
+                                  const newQuestions = [...questions];
+                                  newQuestions[index].required =
+                                    e.target.checked;
+                                  setQuestions(newQuestions);
+                                }}
+                                className="h-3.5 w-3.5 rounded border-gray-300"
+                              />
+                              Required
+                            </label>
+                            {/* Can add type selection later if needed */}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const newQuestions = questions.filter(
+                              (_, i) => i !== index,
+                            );
+                            setQuestions(newQuestions);
+                          }}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end pt-4">

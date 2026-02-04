@@ -41,6 +41,60 @@ const registerForEvent = async (req, res) => {
       }
     }
 
+    // 3. New Validations for Team and Custom Form
+    const { teamName, teamMembers, formData } = req.body;
+
+    if (event.isTeamEvent) {
+      if (!teamName || !teamName.trim()) {
+        return res
+          .status(400)
+          .json({ message: "Team name is required for team events" });
+      }
+
+      let members = [];
+      if (Array.isArray(teamMembers)) {
+        members = teamMembers;
+      }
+
+      // Check Team Size (including the registrant)
+      // If team logic considers the registrant + members list.
+      // Usually "teamMembers" includes everyone, or everyone except registrant.
+      // Let's assume teamMembers is list of OTHER members, total = 1 + members.length
+      // OR teamMembers includes everyone. Let's assume input includes EVERYONE for simplicity if frontend sends it,
+      // but usually student registering is implicitly part of it.
+      // Let's stick to: teamMembers array contains NAMES of other members.
+      const currentTeamSize = 1 + (members.length || 0);
+
+      if (currentTeamSize < event.minTeamSize) {
+        return res
+          .status(400)
+          .json({ message: `Minimum team size is ${event.minTeamSize}` });
+      }
+      if (currentTeamSize > event.maxTeamSize) {
+        return res
+          .status(400)
+          .json({ message: `Maximum team size is ${event.maxTeamSize}` });
+      }
+    }
+
+    // Check Form Config
+    if (event.formConfig && Array.isArray(event.formConfig)) {
+      if (!formData) {
+        return res.status(400).json({ message: "Form data is missing" });
+      }
+
+      for (const field of event.formConfig) {
+        if (
+          field.required &&
+          (!formData[field.label] || formData[field.label].trim() === "")
+        ) {
+          return res
+            .status(400)
+            .json({ message: `Missing required field: ${field.label}` });
+        }
+      }
+    }
+
     // Check if already registered
     const existingRegistration = await prisma.registration.findFirst({
       where: {
@@ -60,6 +114,9 @@ const registerForEvent = async (req, res) => {
         eventId,
         studentId,
         type: "ONLINE",
+        teamName,
+        teamMembers: teamMembers ? teamMembers : undefined,
+        formData: formData ? formData : undefined,
       },
     });
 
@@ -173,11 +230,9 @@ const createManualRegistration = async (req, res) => {
     }
 
     if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user.id)) {
-      return res
-        .status(403)
-        .json({
-          message: "Not authorized to add registrations for this event",
-        });
+      return res.status(403).json({
+        message: "Not authorized to add registrations for this event",
+      });
     }
     // 1. Check if user exists
     let user = await prisma.user.findUnique({

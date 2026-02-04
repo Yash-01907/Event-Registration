@@ -11,9 +11,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import useAuthStore from "@/store/authStore";
 import { formatDate } from "@/lib/utils";
+
+import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -25,6 +28,7 @@ export default function EventDetails() {
   const [error, setError] = useState(null);
   const [registering, setRegistering] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isSoldOut =
     event?.maxParticipants &&
@@ -79,14 +83,22 @@ export default function EventDetails() {
       return;
     }
 
+    if (
+      event.isTeamEvent ||
+      (event.formConfig && event.formConfig.length > 0)
+    ) {
+      setIsModalOpen(true);
+      return;
+    }
+
     setRegistering(true);
     try {
       await api.post("/registrations", { eventId: id });
       setIsRegistered(true);
       // Ideally show a toast here
-      alert("Successfully registered for the event!");
+      toast.success("Successfully registered for the event!");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setRegistering(false);
     }
@@ -276,6 +288,14 @@ export default function EventDetails() {
           </div>
         </div>
       </div>
+      {event && (
+        <EventRegistrationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          event={event}
+          onRegistrationSuccess={() => setIsRegistered(true)}
+        />
+      )}
     </div>
   );
 }

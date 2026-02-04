@@ -27,10 +27,10 @@ export default function Events() {
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold font-heading text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold font-heading text-foreground mb-4">
           Discover Events
         </h1>
-        <p className="text-gray-500 max-w-2xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl mx-auto">
           Explore the latest competitions, workshops, and cultural fests
           happening on campus.
         </p>
@@ -40,7 +40,7 @@ export default function Events() {
       <div
         role="search"
         aria-label="Event filters"
-        className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100"
+        className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center bg-card p-4 rounded-xl border border-border"
       >
         {/* Category Pills */}
         <div
@@ -58,8 +58,8 @@ export default function Events() {
               className={cn(
                 "px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border",
                 selectedCategory === cat
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-900",
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground",
               )}
             >
               {cat === "ALL" ? "All Events" : cat}
@@ -77,7 +77,7 @@ export default function Events() {
             type="text"
             placeholder="Search events..."
             aria-label="Search events"
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-gray-900 placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-foreground placeholder:text-muted-foreground"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -90,7 +90,7 @@ export default function Events() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="border border-gray-100 rounded-xl p-6 space-y-4"
+                className="border border-border rounded-xl p-6 space-y-4"
               >
                 <Skeleton className="h-48 w-full" />
                 <Skeleton className="h-4 w-3/4" />
@@ -103,12 +103,12 @@ export default function Events() {
             Error loading events: {error.message || "Failed to fetch events"}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
-            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <div className="text-center py-20 bg-secondary/10 rounded-lg border border-border border-dashed">
+            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-bold text-foreground mb-2">
               No events found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               {searchTerm || selectedCategory !== "ALL"
                 ? "Try adjusting your filters"
                 : "Check back later for new events!"}
@@ -119,7 +119,7 @@ export default function Events() {
             {filteredEvents.map((event) => (
               <div
                 key={event.id}
-                className="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
+                className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
               >
                 {/* Image / Banner */}
                 <div className="h-48 bg-gray-100 relative overflow-hidden">
@@ -131,7 +131,7 @@ export default function Events() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground group-hover:bg-secondary/20 transition-colors">
                       <Calendar className="h-12 w-12 opacity-20" />
                     </div>
                   )}
@@ -139,14 +139,11 @@ export default function Events() {
                     <span
                       className={cn(
                         "px-2.5 py-1 rounded-full text-xs font-bold border backdrop-blur-md shadow-sm",
-                        event.category === "TECH" &&
-                          "text-indigo-700 bg-indigo-50/90 border-indigo-200",
-                        event.category === "CULTURAL" &&
-                          "text-amber-700 bg-amber-50/90 border-amber-200",
-                        event.category === "SPORTS" &&
-                          "text-emerald-700 bg-emerald-50/90 border-emerald-200",
+                        event.category === "TECH" && "tech",
+                        event.category === "CULTURAL" && "cultural",
+                        event.category === "SPORTS" && "sports",
                         !event.category &&
-                          "text-gray-700 bg-gray-50/90 border-gray-200",
+                          "bg-secondary text-secondary-foreground",
                       )}
                     >
                       {event.category || "EVENT"}
@@ -166,22 +163,22 @@ export default function Events() {
                         })
                       : "Date TBA"}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                     {event.name}
                   </h3>
-                  <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-grow">
+                  <p className="text-muted-foreground text-sm line-clamp-2 mb-4 flex-grow">
                     {event.description || "No description provided."}
                   </p>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span className="truncate max-w-[100px]">
                         {event.location || "TBA"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 ml-auto">
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-foreground">
                         {event.fees > 0 ? `₹${event.fees}` : "Free"}
                       </span>
                     </div>
@@ -190,7 +187,7 @@ export default function Events() {
                   <Link
                     to={`/events/${event.id}`}
                     aria-label={`View details for ${event.name}`}
-                    className="w-full py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-center text-sm font-medium text-white transition-all flex items-center justify-center gap-2 group/btn"
+                    className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-center text-sm font-medium text-primary-foreground transition-all flex items-center justify-center gap-2 group/btn"
                   >
                     View Details
                     <ArrowRight

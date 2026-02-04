@@ -18,6 +18,10 @@ const createEvent = async (req, res) => {
         category,
         posterUrl,
         mainCoordinatorId: req.user.id,
+        isTeamEvent: req.body.isTeamEvent || false,
+        minTeamSize: req.body.minTeamSize ? parseInt(req.body.minTeamSize) : 1,
+        maxTeamSize: req.body.maxTeamSize ? parseInt(req.body.maxTeamSize) : 1,
+        formConfig: req.body.formConfig || null,
       },
     });
 
@@ -159,6 +163,14 @@ const updateEvent = async (req, res) => {
         fees: fees ? parseInt(fees) : 0,
         category,
         posterUrl,
+        isTeamEvent: req.body.isTeamEvent,
+        minTeamSize: req.body.minTeamSize
+          ? parseInt(req.body.minTeamSize)
+          : undefined,
+        maxTeamSize: req.body.maxTeamSize
+          ? parseInt(req.body.maxTeamSize)
+          : undefined,
+        formConfig: req.body.formConfig,
       },
     });
 

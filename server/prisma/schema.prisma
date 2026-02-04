@@ -57,6 +57,12 @@ model Event {
   mainCoordinatorId String
   mainCoordinator   User     @relation("FacultyOwner", fields: [mainCoordinatorId], references: [id])
 
+  // New Fields for Team and Custom Forms
+  isTeamEvent     Boolean  @default(false)
+  minTeamSize     Int      @default(1)
+  maxTeamSize     Int      @default(1)
+  formConfig      Json?    // Array of field definitions
+
   coordinators      User[]          @relation("EventCoordinators")
   registrations     Registration[]
 }
@@ -68,6 +74,11 @@ model Registration {
 
   eventId   String
   studentId String
+
+  // New Fields for Team and Custom Forms
+  teamName    String?
+  teamMembers Json?    // Array of strings (names or emails)
+  formData    Json?    // Key-value store for custom form answers
 
   event     Event    @relation(fields: [eventId], references: [id])
   student   User     @relation(fields: [studentId], references: [id])

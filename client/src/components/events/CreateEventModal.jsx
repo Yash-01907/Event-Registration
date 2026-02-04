@@ -13,8 +13,11 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm();
+
+  const isTeamEvent = watch("isTeamEvent");
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -138,6 +141,64 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
               </p>
             )}
           </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isTeamEvent"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              {...register("isTeamEvent")}
+            />
+            <label
+              htmlFor="isTeamEvent"
+              className="text-sm font-medium text-gray-900"
+            >
+              This is a Team Event
+            </label>
+          </div>
+
+          {isTeamEvent && (
+            <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+              <div>
+                <label className="text-sm font-medium text-gray-900">
+                  Min Team Size
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  {...register("minTeamSize", {
+                    required: "Min team size is required",
+                    min: { value: 1, message: "Min size must be at least 1" },
+                  })}
+                />
+                {errors.minTeamSize && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {errors.minTeamSize.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-900">
+                  Max Team Size
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  {...register("maxTeamSize", {
+                    required: "Max team size is required",
+                    min: { value: 1, message: "Max size must be at least 1" },
+                  })}
+                />
+                {errors.maxTeamSize && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {errors.maxTeamSize.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div>
             <textarea

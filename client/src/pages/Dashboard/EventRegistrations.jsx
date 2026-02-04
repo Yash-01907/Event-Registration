@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Loader2, ArrowLeft, Search, Download } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Download, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import api from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import ManualEntryModal from "@/components/dashboard/ManualEntryModal";
@@ -13,6 +19,7 @@ export default function EventRegistrations() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRegistration, setSelectedRegistration] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -55,6 +62,9 @@ export default function EventRegistrations() {
       "Email",
       "Phone",
       "Registration Type",
+      "Team Name",
+      "Team Members",
+      "Custom Data",
       "Date",
     ];
     const csvContent = [
@@ -66,6 +76,9 @@ export default function EventRegistrations() {
           `"${reg.student.email}"`,
           `"${reg.student.phone || ""}"`,
           `"${reg.type}"`,
+          `"${reg.teamName || ""}"`,
+          `"${(reg.teamMembers || []).join("; ")}"`,
+          `"${reg.formData ? JSON.stringify(reg.formData).replace(/"/g, "'") : ""}"`,
           `"${formatDate(reg.createdAt)}"`,
         ].join(","),
       ),
@@ -145,6 +158,7 @@ export default function EventRegistrations() {
                     <th className="px-6 py-4">Roll Number</th>
                     <th className="px-6 py-4">Email & Phone</th>
                     <th className="px-6 py-4">Registration Type</th>
+                    <th className="px-6 py-4 text-center">Actions</th>
                     <th className="px-6 py-4 text-right">Date</th>
                   </tr>
                 </thead>
@@ -152,7 +166,7 @@ export default function EventRegistrations() {
                   {filteredRegistrations.length === 0 ? (
                     <tr>
                       <td
-                        colSpan="5"
+                        colSpan="6"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         No registrations found matching your search.
@@ -189,6 +203,16 @@ export default function EventRegistrations() {
                             {reg.type}
                           </span>
                         </td>
+                        <td className="px-6 py-4 text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedRegistration(reg)}
+                            className="text-gray-400 hover:text-white"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </td>
                         <td className="px-6 py-4 text-right text-sm text-gray-400">
                           {formatDate(reg.createdAt)}
                         </td>
@@ -204,6 +228,90 @@ export default function EventRegistrations() {
           </div>
         </div>
       )}
+
+      {/* Details Dialog */}
+      <Dialog
+        open={!!selectedRegistration}
+        onOpenChange={() => setSelectedRegistration(null)}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Registration Details</DialogTitle>
+          </DialogHeader>
+          {selectedRegistration && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
+                  <span className="text-muted-foreground block text-xs">
+                    Student
+                  </span>
+                  <p className="font-medium">
+                    {selectedRegistration.student.name}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {selectedRegistration.student.email}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-muted-foreground block text-xs">
+                    Roll No
+                  </span>
+                  <p className="font-medium">
+                    {selectedRegistration.student.rollNumber || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {selectedRegistration.teamName && (
+                <div className="bg-secondary/20 p-3 rounded-md border border-border">
+                  <h4 className="font-semibold text-sm mb-2 text-primary">
+                    Team Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs block">
+                        Team Name
+                      </span>
+                      <p>{selectedRegistration.teamName}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs block">
+                        Members
+                      </span>
+                      <ul className="list-disc list-inside text-muted-foreground">
+                        {selectedRegistration.teamMembers?.map((m, i) => (
+                          <li key={i}>{m}</li>
+                        )) || <li>No other members listed</li>}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedRegistration.formData &&
+                Object.keys(selectedRegistration.formData).length > 0 && (
+                  <div className="bg-secondary/20 p-3 rounded-md border border-border">
+                    <h4 className="font-semibold text-sm mb-2 text-primary">
+                      Additional Details
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      {Object.entries(selectedRegistration.formData).map(
+                        ([key, value]) => (
+                          <div key={key}>
+                            <span className="text-muted-foreground text-xs block">
+                              {key}
+                            </span>
+                            <p>{value}</p>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
