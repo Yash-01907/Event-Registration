@@ -40,10 +40,11 @@ const registerSchema = z
     role: z.enum(["STUDENT", "FACULTY"], { message: "Please select a role" }),
     rollNumber: z.string().optional(),
     branch: z
-      .enum(["Automobile", "Computer", "Mechanical", "Electrical", "Civil"], {
+      .enum(["Automobile", "Computer", "Mechanical", "Electrical", "Civil", ""], {
         message: "Please select a valid branch",
       })
-      .optional(),
+      .optional()
+      .transform((val) => (val === "" ? undefined : val)),
     semester: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
