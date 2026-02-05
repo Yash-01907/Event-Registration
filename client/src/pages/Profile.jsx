@@ -5,15 +5,7 @@ import useAuthStore from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { User, Lock, Mail, Phone, Hash, BookOpen } from "lucide-react";
+import { User, Lock, Mail, Phone, Hash, BookOpen, Shield, Cpu } from "lucide-react";
 
 export default function Profile() {
   const { user, updateProfile, changePassword } = useAuthStore();
@@ -82,229 +74,200 @@ export default function Profile() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8 text-foreground">
-        Account Settings
-      </h1>
+    <div className="min-h-screen gradient-mesh pt-20 pb-12">
+      <div className="absolute inset-0 grid-pattern opacity-30 pointer-events-none" />
 
-      <div className="grid gap-8 md:grid-cols-2">
-        {/* Profile Details Section */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+      <div className="container mx-auto px-4 max-w-4xl relative z-10">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold font-heading text-white tracking-wide flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
+              <Cpu className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-cyan-400">ACCOUNT</span>
+            <span className="text-white">SETTINGS</span>
+          </h1>
+          <p className="text-gray-500 mt-2 font-mono text-sm">// Manage your profile and security</p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Profile Details Section */}
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="p-6 border-b border-gray-800">
+              <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                <User className="h-5 w-5 text-cyan-400" />
                 Profile Information
-              </CardTitle>
-              <CardDescription>
-                Update your personal details here.
-              </CardDescription>
-            </CardHeader>
+              </h2>
+              <p className="text-gray-500 text-sm mt-1">Update your personal details</p>
+            </div>
+
             <form onSubmit={handleSubmitProfile(onProfileSubmit)}>
-              <CardContent className="space-y-4">
+              <div className="p-6 space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-gray-400 text-sm">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="name"
                       placeholder="John Doe"
-                      className="pl-9"
-                      {...registerProfile("name", {
-                        required: "Name is required",
-                      })}
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+                      {...registerProfile("name", { required: "Name is required" })}
                     />
                   </div>
                   {profileErrors.name && (
-                    <p className="text-sm text-red-500">
-                      {profileErrors.name.message}
-                    </p>
+                    <p className="text-xs text-red-400 font-mono">{profileErrors.name.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email" className="text-gray-400 text-sm">Email Address</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="john@example.com"
-                      className="pl-9"
-                      {...registerProfile("email", {
-                        required: "Email is required",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Invalid email address",
-                        },
-                      })}
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+                      {...registerProfile("email", { required: "Email is required" })}
                     />
                   </div>
                   {profileErrors.email && (
-                    <p className="text-sm text-red-500">
-                      {profileErrors.email.message}
-                    </p>
+                    <p className="text-xs text-red-400 font-mono">{profileErrors.email.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-gray-400 text-sm">Phone Number</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Phone className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="phone"
-                      placeholder="1234567890"
-                      className="pl-9"
-                      {...registerProfile("phone", {
-                        minLength: {
-                          value: 10,
-                          message: "Must be at least 10 digits",
-                        },
-                      })}
+                      placeholder="+91 98765 43210"
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+                      {...registerProfile("phone")}
                     />
                   </div>
-                  {profileErrors.phone && (
-                    <p className="text-sm text-red-500">
-                      {profileErrors.phone.message}
-                    </p>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="rollNumber">Roll Number</Label>
+                    <Label htmlFor="rollNumber" className="text-gray-400 text-sm">Roll Number</Label>
                     <div className="relative">
-                      <Hash className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Hash className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                       <Input
                         id="rollNumber"
-                        placeholder="123"
-                        className="pl-9"
+                        placeholder="CS2024001"
+                        className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
                         {...registerProfile("rollNumber")}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="branch">Branch</Label>
+                    <Label htmlFor="branch" className="text-gray-400 text-sm">Branch</Label>
                     <div className="relative">
-                      <BookOpen className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <BookOpen className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                       <Input
                         id="branch"
-                        placeholder="CSE"
-                        className="pl-9"
+                        placeholder="Computer"
+                        className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
                         {...registerProfile("branch")}
                       />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" disabled={isProfileSubmitting}>
+              </div>
+
+              <div className="p-6 pt-0">
+                <Button
+                  type="submit"
+                  disabled={isProfileSubmitting}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold py-3 rounded-xl btn-glow"
+                >
                   {isProfileSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
-              </CardFooter>
+              </div>
             </form>
-          </Card>
-        </div>
+          </div>
 
-        {/* Security Section */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
+          {/* Security Section */}
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="p-6 border-b border-gray-800">
+              <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                <Shield className="h-5 w-5 text-purple-400" />
                 Security
-              </CardTitle>
-              <CardDescription>
-                Change your password to keep your account secure.
-              </CardDescription>
-            </CardHeader>
+              </h2>
+              <p className="text-gray-500 text-sm mt-1">Change your password</p>
+            </div>
+
             <form onSubmit={handleSubmitPassword(onPasswordSubmit)}>
-              <CardContent className="space-y-4">
+              <div className="p-6 space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword" className="text-gray-400 text-sm">Current Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="currentPassword"
                       type="password"
                       placeholder="••••••••"
-                      className="pl-9"
-                      {...registerPassword("currentPassword", {
-                        required: "Current password is required",
-                      })}
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+                      {...registerPassword("currentPassword", { required: "Current password is required" })}
                     />
                   </div>
                   {passwordErrors.currentPassword && (
-                    <p className="text-sm text-red-500">
-                      {passwordErrors.currentPassword.message}
-                    </p>
+                    <p className="text-xs text-red-400 font-mono">{passwordErrors.currentPassword.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword" className="text-gray-400 text-sm">New Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="newPassword"
                       type="password"
                       placeholder="••••••••"
-                      className="pl-9"
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
                       {...registerPassword("newPassword", {
                         required: "New password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Must be at least 6 characters",
-                        },
+                        minLength: { value: 6, message: "Min 6 characters" }
                       })}
                     />
                   </div>
                   {passwordErrors.newPassword && (
-                    <p className="text-sm text-red-500">
-                      {passwordErrors.newPassword.message}
-                    </p>
+                    <p className="text-xs text-red-400 font-mono">{passwordErrors.newPassword.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-gray-400 text-sm">Confirm New Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-4 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="confirmPassword"
                       type="password"
                       placeholder="••••••••"
-                      className="pl-9"
-                      {...registerPassword("confirmPassword", {
-                        required: "Please confirm your new password",
-                        validate: (val, formValues) => {
-                          return (
-                            val === formValues.newPassword ||
-                            "Passwords do not match"
-                          );
-                        },
-                      })}
+                      className="pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+                      {...registerPassword("confirmPassword", { required: "Please confirm your password" })}
                     />
                   </div>
                   {passwordErrors.confirmPassword && (
-                    <p className="text-sm text-red-500">
-                      {passwordErrors.confirmPassword.message}
-                    </p>
+                    <p className="text-xs text-red-400 font-mono">{passwordErrors.confirmPassword.message}</p>
                   )}
                 </div>
-              </CardContent>
-              <CardFooter>
+              </div>
+
+              <div className="p-6 pt-0">
                 <Button
                   type="submit"
-                  variant="destructive"
                   disabled={isPasswordSubmitting}
+                  className="w-full bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white font-bold py-3 rounded-xl btn-glow"
                 >
                   {isPasswordSubmitting ? "Changing..." : "Change Password"}
                 </Button>
-              </CardFooter>
+              </div>
             </form>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

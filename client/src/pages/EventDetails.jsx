@@ -9,6 +9,8 @@ import {
   Loader2,
   Share2,
   CheckCircle2,
+  Cpu,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -44,7 +46,7 @@ export default function EventDetails() {
         setEvent(response.data);
       } catch (err) {
         setError(
-          err.response?.data?.message || "Failed to fetch event details",
+          err.response?.data?.message || "Failed to fetch event details"
         );
       } finally {
         setIsLoading(false);
@@ -56,10 +58,6 @@ export default function EventDetails() {
 
   // Check if already registered
   useEffect(() => {
-    // This is a bit tricky since we don't have a direct "am I registered?" endpoint for a specific event
-    // without fetching all registrations.
-    // However, the prompt says "If logged in -> Call POST /api/registrations. Show success toast and change button to 'Registered'."
-    // I can check "my registrations" to see if I'm already there to prevent double booking in UI.
     const checkRegistrationStatus = async () => {
       if (user) {
         try {
@@ -95,7 +93,6 @@ export default function EventDetails() {
     try {
       await api.post("/registrations", { eventId: id });
       setIsRegistered(true);
-      // Ideally show a toast here
       toast.success("Successfully registered for the event!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
@@ -104,18 +101,34 @@ export default function EventDetails() {
     }
   };
 
+  const getCategoryColor = (category) => {
+    switch (category) {
+      case "TECH":
+        return "text-cyan-400 border-cyan-500/30 bg-cyan-500/10";
+      case "CULTURAL":
+        return "text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10";
+      case "SPORTS":
+        return "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+      default:
+        return "text-gray-400 border-gray-500/30 bg-gray-500/10";
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen pt-16">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="flex justify-center items-center h-screen gradient-mesh">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-cyan-400" />
+          <p className="text-gray-500 font-mono text-sm">Loading event...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="container mx-auto px-4 py-8 pt-24 text-center">
-        <div className="bg-destructive/10 text-destructive p-4 rounded-lg inline-block">
+      <div className="container mx-auto px-4 py-8 pt-24 text-center gradient-mesh min-h-screen">
+        <div className="glass-card rounded-xl p-6 inline-block border-red-500/30 text-red-400">
           {error || "Event not found"}
         </div>
       </div>
@@ -123,52 +136,57 @@ export default function EventDetails() {
   }
 
   return (
-    <div className="min-h-screen pt-16 pb-12">
+    <div className="min-h-screen pt-16 pb-12 gradient-mesh">
       {/* Banner/Hero Section */}
       <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-        <img
-          src={
-            event.posterUrl ||
-            "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop"
-          }
-          alt={event.name}
-          className="w-full h-full object-cover"
-        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/50 to-transparent z-10" />
+        {event.posterUrl ? (
+          <img
+            src={event.posterUrl}
+            alt={event.name}
+            className="w-full h-full object-cover opacity-70"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+            <Cpu className="h-24 w-24 text-gray-700" />
+          </div>
+        )}
         <div className="absolute bottom-0 left-0 right-0 z-20 container mx-auto px-4 pb-8">
           <div className="max-w-4xl">
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/20 text-xs font-semibold uppercase tracking-wider mb-4">
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-xs font-bold font-mono uppercase tracking-wider mb-4 border ${getCategoryColor(event.category)}`}
+            >
               {event.category}
             </span>
             {isSoldOut && (
-              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-destructive/20 text-destructive border border-destructive/20 text-xs font-semibold uppercase tracking-wider mb-4">
+              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold uppercase tracking-wider mb-4">
                 Sold Out
               </span>
             )}
             {isClosed && !isSoldOut && (
-              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/20 text-xs font-semibold uppercase tracking-wider mb-4">
+              <span className="inline-block ml-3 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-xs font-bold uppercase tracking-wider mb-4">
                 Closed
               </span>
             )}
-            <h1 className="text-4xl md:text-5xl md:leading-tight font-bold font-heading text-white mb-2 text-shadow-lg">
+            <h1 className="text-4xl md:text-5xl md:leading-tight font-bold font-heading text-white mb-2 tracking-wide">
               {event.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-6 text-gray-200 mt-4">
+            <div className="flex flex-wrap items-center gap-6 text-gray-300 mt-4 font-mono text-sm">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Calendar className="h-5 w-5 text-cyan-400" />
                 <span>
                   {event.date
                     ? new Date(event.date).toLocaleDateString(undefined, {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
                     : "Date TBA"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
+                <MapPin className="h-5 w-5 text-purple-400" />
                 <span>{event.location || "Venue TBA"}</span>
               </div>
             </div>
@@ -181,74 +199,93 @@ export default function EventDetails() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                About Event
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2 font-heading tracking-wide">
+                About <span className="text-cyan-400">Event</span>
               </h2>
-              <div className="prose prose-gray max-w-none text-gray-600">
-                <p className="whitespace-pre-wrap leading-relaxed">
+              <div className="text-gray-400 leading-relaxed">
+                <p className="whitespace-pre-wrap">
                   {event.description || "No description provided."}
                 </p>
               </div>
             </section>
 
             {/* Coordinator Info */}
-            <section className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
+            <section className="glass-card rounded-xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 font-heading">
+                <User className="h-5 w-5 text-cyan-400" />
                 Event Coordinator
               </h3>
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                   {event.mainCoordinator?.name?.charAt(0) || "F"}
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-white">
                     {event.mainCoordinator?.name || "Faculty Coordinator"}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 font-mono">
                     {event.mainCoordinator?.email}
                   </div>
                 </div>
               </div>
             </section>
+
+            {/* Event Stats */}
+            {event.maxParticipants && (
+              <section className="glass-card rounded-xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 font-heading">
+                  <Users className="h-5 w-5 text-emerald-400" />
+                  Registrations
+                </h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 transition-all duration-500"
+                      style={{
+                        width: `${Math.min(100, ((event._count?.registrations || 0) / event.maxParticipants) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-gray-400 font-mono text-sm">
+                    {event._count?.registrations || 0}/{event.maxParticipants}
+                  </span>
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Sidebar / Register Action */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="glass-card rounded-xl p-6 border-glow">
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-gray-500">Registration Fee</span>
-                  <div className="flex items-center text-2xl font-bold text-gray-900">
+                  <div className="flex items-center text-2xl font-bold text-white font-heading">
                     {event.fees > 0 ? (
                       <>
-                        <IndianRupee className="h-6 w-6" />
-                        {event.fees}
+                        <IndianRupee className="h-6 w-6 text-cyan-400" />
+                        <span className="text-cyan-400">{event.fees}</span>
                       </>
                     ) : (
-                      <span className="text-emerald-600">Free</span>
+                      <span className="text-emerald-400">Free</span>
                     )}
                   </div>
                 </div>
 
                 <Button
-                  className="w-full h-12 text-lg font-semibold"
+                  className={`w-full h-12 text-lg font-semibold rounded-xl ${isRegistered
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : isSoldOut || isClosed
+                        ? "bg-gray-800 text-gray-500"
+                        : "bg-gradient-to-r from-cyan-500 to-purple-600 text-white btn-glow"
+                    }`}
                   size="lg"
                   onClick={handleRegister}
-                  disabled={
-                    registering || isRegistered || isSoldOut || isClosed
-                  }
-                  variant={
-                    isRegistered
-                      ? "outline"
-                      : isSoldOut || isClosed
-                        ? "secondary"
-                        : "default"
-                  }
+                  disabled={registering || isRegistered || isSoldOut || isClosed}
                 >
                   {isRegistered ? (
                     <>
-                      <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-600" />
+                      <CheckCircle2 className="mr-2 h-5 w-5" />
                       Registered
                     </>
                   ) : isSoldOut ? (
@@ -268,7 +305,7 @@ export default function EventDetails() {
                   )}
                 </Button>
 
-                <p className="text-xs text-center text-gray-500 mt-4">
+                <p className="text-xs text-center text-gray-600 mt-4 font-mono">
                   {isRegistered
                     ? "You are all set! Check your ticket in dashboard."
                     : "Limited seats available. Register soon!"}
@@ -278,7 +315,7 @@ export default function EventDetails() {
               <div className="text-center">
                 <Button
                   variant="ghost"
-                  className="text-gray-500 hover:text-gray-900"
+                  className="text-gray-500 hover:text-cyan-400"
                 >
                   <Share2 className="mr-2 h-4 w-4" />
                   Share Event
