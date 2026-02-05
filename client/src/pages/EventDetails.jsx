@@ -46,7 +46,7 @@ export default function EventDetails() {
         setEvent(response.data);
       } catch (err) {
         setError(
-          err.response?.data?.message || "Failed to fetch event details"
+          err.response?.data?.message || "Failed to fetch event details",
         );
       } finally {
         setIsLoading(false);
@@ -76,8 +76,10 @@ export default function EventDetails() {
   }, [user, id]);
 
   const handleRegister = async () => {
+    console.log("Registering...");
     if (!user) {
       navigate("/login");
+      console.log("Not logged in");
       return;
     }
 
@@ -86,16 +88,19 @@ export default function EventDetails() {
       (event.formConfig && event.formConfig.length > 0)
     ) {
       setIsModalOpen(true);
+      console.log("Modal Opened");
       return;
     }
 
     setRegistering(true);
+    console.log("Registering...");
     try {
       await api.post("/registrations", { eventId: id });
       setIsRegistered(true);
       toast.success("Successfully registered for the event!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
+      console.log(err.response?.data?.message || "Registration failed");
     } finally {
       setRegistering(false);
     }
@@ -134,7 +139,7 @@ export default function EventDetails() {
       </div>
     );
   }
-
+  console.log({ registering, isRegistered, isSoldOut, isClosed });
   return (
     <div className="min-h-screen pt-16 pb-12 gradient-mesh">
       {/* Banner/Hero Section */}
@@ -177,11 +182,11 @@ export default function EventDetails() {
                 <span>
                   {event.date
                     ? new Date(event.date).toLocaleDateString(undefined, {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
                     : "Date TBA"}
                 </span>
               </div>
@@ -273,15 +278,18 @@ export default function EventDetails() {
                 </div>
 
                 <Button
-                  className={`w-full h-12 text-lg font-semibold rounded-xl ${isRegistered
+                  className={`w-full h-12 text-lg font-semibold rounded-xl ${
+                    isRegistered
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                       : isSoldOut || isClosed
                         ? "bg-gray-800 text-gray-500"
                         : "bg-gradient-to-r from-cyan-500 to-purple-600 text-white btn-glow"
-                    }`}
+                  }`}
                   size="lg"
                   onClick={handleRegister}
-                  disabled={registering || isRegistered || isSoldOut || isClosed}
+                  disabled={
+                    registering || isRegistered || isSoldOut || isClosed
+                  }
                 >
                   {isRegistered ? (
                     <>

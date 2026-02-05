@@ -28,10 +28,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-          ? "glass border-b border-cyan-500/20"
-          : "bg-transparent"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "glass border-b border-cyan-500/20" : "bg-transparent"
+      }`}
     >
       {/* Scanning line at top */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
@@ -62,7 +61,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* <div className="hidden md:flex items-center gap-8">
           <Link
             to="/events"
             className="relative text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-cyan-400 group"
@@ -91,12 +90,12 @@ export default function Navbar() {
             Cultural
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-fuchsia-400 transition-all group-hover:w-full" />
           </a>
-        </div>
+        </div> */}
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               {(user.role === "FACULTY" || user.role === "ADMIN") && (
                 <Link to="/dashboard">
                   <Button
@@ -163,7 +162,7 @@ export default function Navbar() {
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link to="/login">
                 <Button
                   variant="ghost"
@@ -207,24 +206,84 @@ export default function Navbar() {
           >
             Events
           </Link>
-          <a
-            href="#tech"
-            className="block text-sm font-bold font-mono uppercase text-gray-400 hover:text-cyan-400 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
-          >
-            Tech
-          </a>
-          <a
-            href="#sports"
-            className="block text-sm font-bold font-mono uppercase text-gray-400 hover:text-emerald-400 py-3 px-3 rounded-lg hover:bg-emerald-500/10 transition-all"
-          >
-            Sports
-          </a>
-          <a
-            href="#cultural"
-            className="block text-sm font-bold font-mono uppercase text-gray-400 hover:text-fuchsia-400 py-3 px-3 rounded-lg hover:bg-fuchsia-500/10 transition-all"
-          >
-            Cultural
-          </a>
+
+          {user ? (
+            <div className="border-t border-gray-800/50 mt-2 pt-2 space-y-1">
+              {(user.role === "FACULTY" || user.role === "ADMIN") && (
+                <Link
+                  to="/dashboard"
+                  className="block text-sm font-bold font-mono uppercase text-gray-300 hover:text-cyan-400 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
+
+              {user.coordinatedEvents &&
+                user.coordinatedEvents.length > 0 &&
+                (isCoordinatorDashboard ? (
+                  <Link
+                    to="/"
+                    className="block text-sm font-bold font-mono uppercase text-gray-300 hover:text-cyan-400 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Student View
+                  </Link>
+                ) : (
+                  <Link
+                    to="/coordinator-dashboard"
+                    className="block text-sm font-bold font-mono uppercase text-purple-400 hover:text-purple-300 py-3 px-3 rounded-lg hover:bg-purple-500/10 transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Coordinator View
+                  </Link>
+                ))}
+
+              {user.role === "STUDENT" && (
+                <Link
+                  to="/my-tickets"
+                  className="block text-sm font-bold font-mono uppercase text-cyan-400 hover:text-cyan-300 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Tickets
+                </Link>
+              )}
+
+              <Link
+                to="/profile"
+                className="block text-sm font-bold font-mono uppercase text-gray-300 hover:text-cyan-400 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Profile
+              </Link>
+
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left block text-sm font-bold font-mono uppercase text-red-400 hover:text-red-300 py-3 px-3 rounded-lg hover:bg-red-500/10 transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="border-t border-gray-800/50 mt-2 pt-4 flex flex-col gap-3">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  className="w-full text-gray-300 font-mono uppercase"
+                >
+                  Login
+                </Button>
+              </Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full btn-neon bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-mono uppercase">
+                  Register
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>

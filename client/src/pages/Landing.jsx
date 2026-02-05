@@ -359,9 +359,9 @@ export default function Landing() {
           </div>
 
           {/* Filters & Search */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-12 justify-between items-center p-5 rounded-2xl glass-card border-glow">
+          <div className="flex flex-col lg:flex-row gap-4 mb-12 justify-center items-center p-5 rounded-2xl glass-card border-glow">
             {/* Category Pills */}
-            <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto">
+            {/* <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto">
               {categories.map((cat) => {
                 const Icon = cat.icon;
                 return (
@@ -380,10 +380,10 @@ export default function Landing() {
                   </button>
                 );
               })}
-            </div>
+            </div> */}
 
             {/* Search Bar */}
-            <div className="relative w-full lg:w-80">
+            <div className="relative w-full max-w-xl ">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <input
                 type="text"
@@ -521,7 +521,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-12 relative">
+      {/* <footer className="border-t border-gray-800 py-12 relative">
         <div className="absolute inset-0 hex-pattern opacity-30" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -554,7 +554,7 @@ export default function Landing() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
