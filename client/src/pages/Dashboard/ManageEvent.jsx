@@ -139,395 +139,399 @@ export default function ManageEvent() {
   if (!event) return <div className="text-center pt-20">Event not found</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/dashboard")}
-          className="gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-        </Button>
+    <div className="min-h-screen gradient-mesh pt-20 pb-12">
+      <div className="absolute inset-0 grid-pattern opacity-30 pointer-events-none" />
 
-        <Button
-          variant="outline"
-          onClick={() => navigate(`/dashboard/event/${id}/registrations`)}
-          className="gap-2"
-        >
-          <Users className="h-4 w-4" /> View Registrations
-        </Button>
-      </div>
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard")}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+          </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Event Details */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold font-heading text-foreground">
-                Edit Event Details
-              </h2>
-              <span
-                className={cn(
-                  "px-2.5 py-1 rounded-full text-xs font-medium border",
-                  event.isPublished
-                    ? "bg-green-400/10 text-green-400 ring-green-400/20"
-                    : "bg-yellow-400/10 text-yellow-400 ring-yellow-400/20",
-                )}
-              >
-                {event.isPublished ? "Published" : "Draft"}
-              </span>
-            </div>
-
-            {message.text && (
-              <div
-                className={cn(
-                  "mb-4 p-3 rounded-md text-sm border",
-                  message.type === "error"
-                    ? "bg-destructive/10 border-destructive/20 text-destructive"
-                    : "bg-green-500/10 border-green-500/20 text-green-500",
-                )}
-              >
-                {message.text}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(onUpdateEvent)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Event Name
-                  </label>
-                  <input
-                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    {...register("name", { required: "Required" })}
-                  />
-                  {errors.name && (
-                    <p className="mt-1 text-xs text-destructive">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Category
-                  </label>
-                  <select
-                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    {...register("category")}
-                  >
-                    <option value="TECH" className="bg-background">
-                      Technical
-                    </option>
-                    <option value="CULTURAL" className="bg-background">
-                      Cultural
-                    </option>
-                    <option value="SPORTS" className="bg-background">
-                      Sports
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Date & Time
-                  </label>
-                  <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="datetime-local"
-                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                      {...register("date")}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Fees (₹)
-                  </label>
-                  <div className="relative mt-1">
-                    <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="number"
-                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                      {...register("fees")}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Venue
-                </label>
-                <div className="relative mt-1">
-                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <input
-                    className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    {...register("location")}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Description
-                </label>
-                <textarea
-                  rows="4"
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  {...register("description")}
-                />
-              </div>
-
-              {/* Team Event Settings */}
-              <div className="p-4 rounded-lg bg-card border border-border space-y-4">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="edit-isTeamEvent"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    {...register("isTeamEvent")}
-                  />
-                  <label
-                    htmlFor="edit-isTeamEvent"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    This is a Team Event
-                  </label>
-                </div>
-
-                {isTeamEvent && (
-                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Min Team Size
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        {...register("minTeamSize", {
-                          required: isTeamEvent
-                            ? "Min team size is required"
-                            : false,
-                          min: {
-                            value: 1,
-                            message: "Min size must be at least 1",
-                          },
-                        })}
-                      />
-                      {errors.minTeamSize && (
-                        <p className="mt-1 text-xs text-destructive">
-                          {errors.minTeamSize.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Max Team Size
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        {...register("maxTeamSize", {
-                          required: isTeamEvent
-                            ? "Max team size is required"
-                            : false,
-                          min: {
-                            value: 1,
-                            message: "Max size must be at least 1",
-                          },
-                        })}
-                      />
-                      {errors.maxTeamSize && (
-                        <p className="mt-1 text-xs text-destructive">
-                          {errors.maxTeamSize.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Custom Questions Builder */}
-              <div className="p-4 rounded-lg bg-card border border-border space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-foreground">
-                    Registration Questions
-                  </h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setQuestions([
-                        ...questions,
-                        { label: "", type: "text", required: false },
-                      ])
-                    }
-                    className="text-xs h-8"
-                  >
-                    <Plus className="h-3 w-3 mr-1" /> Add Question
-                  </Button>
-                </div>
-
-                {questions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">
-                    No custom questions added.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {questions.map((q, index) => (
-                      <div
-                        key={index}
-                        className="flex gap-2 items-start p-3 bg-background/50 rounded-md border border-border"
-                      >
-                        <div className="flex-1 space-y-2">
-                          <input
-                            placeholder="Question (e.g., GitHub Handle)"
-                            value={q.label}
-                            onChange={(e) => {
-                              const newQuestions = [...questions];
-                              newQuestions[index].label = e.target.value;
-                              setQuestions(newQuestions);
-                            }}
-                            className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                          />
-                          <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <input
-                                type="checkbox"
-                                checked={q.required}
-                                onChange={(e) => {
-                                  const newQuestions = [...questions];
-                                  newQuestions[index].required =
-                                    e.target.checked;
-                                  setQuestions(newQuestions);
-                                }}
-                                className="h-3.5 w-3.5 rounded border-gray-300"
-                              />
-                              Required
-                            </label>
-                            {/* Can add type selection later if needed */}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            const newQuestions = questions.filter(
-                              (_, i) => i !== index,
-                            );
-                            setQuestions(newQuestions);
-                          }}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={saving}>
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
-                </Button>
-              </div>
-            </form>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/dashboard/event/${id}/registrations`)}
+            className="gap-2"
+          >
+            <Users className="h-4 w-4" /> View Registrations
+          </Button>
         </div>
 
-        {/* Right Column: Coordinators */}
-        <div className="space-y-6">
-          <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Users className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold font-heading text-foreground">
-                Coordinators
-              </h2>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Event Details */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold font-heading text-foreground">
+                  Edit Event Details
+                </h2>
+                <span
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-xs font-medium border",
+                    event.isPublished
+                      ? "bg-green-400/10 text-green-400 ring-green-400/20"
+                      : "bg-yellow-400/10 text-yellow-400 ring-yellow-400/20",
+                  )}
+                >
+                  {event.isPublished ? "Published" : "Draft"}
+                </span>
+              </div>
 
-            <form onSubmit={onAddCoordinator} className="mb-6">
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                Add Student Coordinator
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="email"
-                    placeholder="student@example.com"
-                    value={coordEmail}
-                    onChange={(e) => setCoordEmail(e.target.value)}
-                    className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              {message.text && (
+                <div
+                  className={cn(
+                    "mb-4 p-3 rounded-md text-sm border",
+                    message.type === "error"
+                      ? "bg-destructive/10 border-destructive/20 text-destructive"
+                      : "bg-green-500/10 border-green-500/20 text-green-500",
+                  )}
+                >
+                  {message.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit(onUpdateEvent)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Event Name
+                    </label>
+                    <input
+                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      {...register("name", { required: "Required" })}
+                    />
+                    {errors.name && (
+                      <p className="mt-1 text-xs text-destructive">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Category
+                    </label>
+                    <select
+                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      {...register("category")}
+                    >
+                      <option value="TECH" className="bg-background">
+                        Technical
+                      </option>
+                      <option value="CULTURAL" className="bg-background">
+                        Cultural
+                      </option>
+                      <option value="SPORTS" className="bg-background">
+                        Sports
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Date & Time
+                    </label>
+                    <div className="relative mt-1">
+                      <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="datetime-local"
+                        className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        {...register("date")}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Fees (₹)
+                    </label>
+                    <div className="relative mt-1">
+                      <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="number"
+                        className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        {...register("fees")}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Venue
+                  </label>
+                  <div className="relative mt-1">
+                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <input
+                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      {...register("location")}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Description
+                  </label>
+                  <textarea
+                    rows="4"
+                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    {...register("description")}
                   />
                 </div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={addingCoord || !coordEmail}
-                >
-                  {addingCoord ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
+
+                {/* Team Event Settings */}
+                <div className="p-4 rounded-lg bg-card border border-border space-y-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="edit-isTeamEvent"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      {...register("isTeamEvent")}
+                    />
+                    <label
+                      htmlFor="edit-isTeamEvent"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      This is a Team Event
+                    </label>
+                  </div>
+
+                  {isTeamEvent && (
+                    <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Min Team Size
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                          {...register("minTeamSize", {
+                            required: isTeamEvent
+                              ? "Min team size is required"
+                              : false,
+                            min: {
+                              value: 1,
+                              message: "Min size must be at least 1",
+                            },
+                          })}
+                        />
+                        {errors.minTeamSize && (
+                          <p className="mt-1 text-xs text-destructive">
+                            {errors.minTeamSize.message}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Max Team Size
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                          {...register("maxTeamSize", {
+                            required: isTeamEvent
+                              ? "Max team size is required"
+                              : false,
+                            min: {
+                              value: 1,
+                              message: "Max size must be at least 1",
+                            },
+                          })}
+                        />
+                        {errors.maxTeamSize && (
+                          <p className="mt-1 text-xs text-destructive">
+                            {errors.maxTeamSize.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </Button>
-              </div>
-            </form>
-
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Current Team
-              </h3>
-
-              {/* Main Coordinator */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
-                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                  {event.mainCoordinator?.name?.charAt(0) || "F"}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {event.mainCoordinator?.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    Faculty (Owner)
-                  </p>
+
+                {/* Custom Questions Builder */}
+                <div className="p-4 rounded-lg bg-card border border-border space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-medium text-foreground">
+                      Registration Questions
+                    </h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setQuestions([
+                          ...questions,
+                          { label: "", type: "text", required: false },
+                        ])
+                      }
+                      className="text-xs h-8"
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Add Question
+                    </Button>
+                  </div>
+
+                  {questions.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">
+                      No custom questions added.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {questions.map((q, index) => (
+                        <div
+                          key={index}
+                          className="flex gap-2 items-start p-3 bg-background/50 rounded-md border border-border"
+                        >
+                          <div className="flex-1 space-y-2">
+                            <input
+                              placeholder="Question (e.g., GitHub Handle)"
+                              value={q.label}
+                              onChange={(e) => {
+                                const newQuestions = [...questions];
+                                newQuestions[index].label = e.target.value;
+                                setQuestions(newQuestions);
+                              }}
+                              className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                            <div className="flex items-center gap-4">
+                              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <input
+                                  type="checkbox"
+                                  checked={q.required}
+                                  onChange={(e) => {
+                                    const newQuestions = [...questions];
+                                    newQuestions[index].required =
+                                      e.target.checked;
+                                    setQuestions(newQuestions);
+                                  }}
+                                  className="h-3.5 w-3.5 rounded border-gray-300"
+                                />
+                                Required
+                              </label>
+                              {/* Can add type selection later if needed */}
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newQuestions = questions.filter(
+                                (_, i) => i !== index,
+                              );
+                              setQuestions(newQuestions);
+                            }}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button type="submit" disabled={saving}>
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Column: Coordinators */}
+          <div className="space-y-6">
+            <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Users className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold font-heading text-foreground">
+                  Coordinators
+                </h2>
               </div>
 
-              {/* Student Coordinators */}
-              {event.coordinators?.map((coord) => (
-                <div
-                  key={coord.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
-                >
-                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground text-xs font-bold">
-                    {coord.name?.charAt(0)}
+              <form onSubmit={onAddCoordinator} className="mb-6">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Add Student Coordinator
+                </label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      placeholder="student@example.com"
+                      value={coordEmail}
+                      onChange={(e) => setCoordEmail(e.target.value)}
+                      className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={addingCoord || !coordEmail}
+                  >
+                    {addingCoord ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Current Team
+                </h3>
+
+                {/* Main Coordinator */}
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                    {event.mainCoordinator?.name?.charAt(0) || "F"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {coord.name}
+                      {event.mainCoordinator?.name}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {coord.email}
+                      Faculty (Owner)
                     </p>
                   </div>
                 </div>
-              ))}
 
-              {(!event.coordinators || event.coordinators.length === 0) && (
-                <p className="text-sm text-muted-foreground italic text-center py-4">
-                  No student coordinators assigned yet.
-                </p>
-              )}
+                {/* Student Coordinators */}
+                {event.coordinators?.map((coord) => (
+                  <div
+                    key={coord.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground text-xs font-bold">
+                      {coord.name?.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {coord.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {coord.email}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {(!event.coordinators || event.coordinators.length === 0) && (
+                  <p className="text-sm text-muted-foreground italic text-center py-4">
+                    No student coordinators assigned yet.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

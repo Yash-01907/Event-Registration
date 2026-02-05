@@ -38,17 +38,17 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-background/95 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-cyan-500/20 bg-gray-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold font-heading text-gray-900">
-            Create New Event
+          <h2 className="text-xl font-bold font-heading text-white">
+            Create New<span className="text-cyan-400">Event</span>
           </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 text-gray-400 hover:text-white"
+            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -56,15 +56,16 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-900">
+            <label className="text-sm font-medium text-gray-400">
               Event Name
             </label>
             <input
-              className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="Enter event name"
               {...register("name", { required: "Event name is required" })}
             />
             {errors.name && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="mt-1 text-xs text-red-400">
                 {errors.name.message}
               </p>
             )}
@@ -72,30 +73,31 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-900">Date</label>
+              <label className="text-sm font-medium text-gray-400">Date</label>
               <input
                 type="datetime-local"
-                className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 [color-scheme:dark]"
                 {...register("date", { required: "Date is required" })}
               />
               {errors.date && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-red-400">
                   {errors.date.message}
                 </p>
               )}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-900">
+              <label className="text-sm font-medium text-gray-400">
                 Fees (₹)
               </label>
               <input
                 type="number"
                 min="0"
-                className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="0"
+                className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 {...register("fees", { required: "Fees is required", min: 0 })}
               />
               {errors.fees && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-red-400">
                   {errors.fees.message}
                 </p>
               )}
@@ -103,40 +105,41 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-900">
+            <label className="text-sm font-medium text-gray-400">
               Category
             </label>
             <select
-              className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               {...register("category", { required: "Category is required" })}
             >
-              <option value="TECH" className="bg-background">
+              <option value="TECH" className="bg-gray-900">
                 Technical
               </option>
-              <option value="CULTURAL" className="bg-background">
+              <option value="CULTURAL" className="bg-gray-900">
                 Cultural
               </option>
-              <option value="SPORTS" className="bg-background">
+              <option value="SPORTS" className="bg-gray-900">
                 Sports
               </option>
             </select>
             {errors.category && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="mt-1 text-xs text-red-400">
                 {errors.category.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-900">
+            <label className="text-sm font-medium text-gray-400">
               Venue / Location
             </label>
             <input
-              className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Enter venue"
+              className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               {...register("location", { required: "Location is required" })}
             />
             {errors.location && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="mt-1 text-xs text-red-400">
                 {errors.location.message}
               </p>
             )}
@@ -146,12 +149,12 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
             <input
               type="checkbox"
               id="isTeamEvent"
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              className="h-4 w-4 rounded border-gray-600 bg-gray-900 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-gray-900"
               {...register("isTeamEvent")}
             />
             <label
               htmlFor="isTeamEvent"
-              className="text-sm font-medium text-gray-900"
+              className="text-sm font-medium text-gray-300"
             >
               This is a Team Event
             </label>
@@ -160,39 +163,41 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
           {isTeamEvent && (
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
               <div>
-                <label className="text-sm font-medium text-gray-900">
+                <label className="text-sm font-medium text-gray-400">
                   Min Team Size
                 </label>
                 <input
                   type="number"
                   min="1"
-                  className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="2"
+                  className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                   {...register("minTeamSize", {
                     required: "Min team size is required",
                     min: { value: 1, message: "Min size must be at least 1" },
                   })}
                 />
                 {errors.minTeamSize && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-red-400">
                     {errors.minTeamSize.message}
                   </p>
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-900">
+                <label className="text-sm font-medium text-gray-400">
                   Max Team Size
                 </label>
                 <input
                   type="number"
                   min="1"
-                  className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="5"
+                  className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                   {...register("maxTeamSize", {
                     required: "Max team size is required",
                     min: { value: 1, message: "Max size must be at least 1" },
                   })}
                 />
                 {errors.maxTeamSize && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-red-400">
                     {errors.maxTeamSize.message}
                   </p>
                 )}
@@ -204,19 +209,19 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
             <textarea
               rows="3"
               placeholder="Event Description (optional)"
-              className="mt-1 block w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-500"
+              className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               {...register("description")}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-900 block mb-2">
+            <label className="text-sm font-medium text-gray-400 block mb-2">
               Event Poster
             </label>
 
             <div className="flex items-start gap-4">
               {previewUrl ? (
-                <div className="relative h-20 w-20 rounded-md overflow-hidden border border-white/20 group">
+                <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-700 group">
                   <img
                     src={previewUrl}
                     alt="Preview"
@@ -236,7 +241,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                   </div>
                 </div>
               ) : (
-                <div className="h-20 w-20 rounded-md border border-dashed border-white/20 bg-secondary/30 flex items-center justify-center text-gray-500">
+                <div className="h-20 w-20 rounded-lg border border-dashed border-gray-700 bg-gray-900 flex items-center justify-center text-gray-600">
                   <span className="text-xs">No Image</span>
                 </div>
               )}
@@ -246,7 +251,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                   type="file"
                   accept="image/*"
                   disabled={uploading}
-                  className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
@@ -282,16 +287,21 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
               disabled={isLoading}
+              className="text-gray-400 hover:text-white hover:bg-white/10"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-bold hover:from-cyan-400 hover:to-cyan-500"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
