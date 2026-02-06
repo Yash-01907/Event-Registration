@@ -49,11 +49,11 @@ export default function Navbar() {
           <span className="hidden sm:flex items-baseline gap-1">
             <span
               className="text-cyan-400 text-glow-cyan glitch"
-              data-text="TECH"
+              data-text="UDAAN"
             >
-              TECH
+              UDAAN
             </span>
-            <span className="text-white">FEST</span>
+            {/* <span className="text-white">FEST</span> */}
             <span className="text-purple-400 text-sm font-mono ml-1 flicker">
               '26
             </span>
