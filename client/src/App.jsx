@@ -17,6 +17,7 @@ import Profile from "@/pages/Profile";
 
 import FacultyDashboard from "@/pages/Dashboard/FacultyDashboard";
 import useAuthStore from "@/store/authStore";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -49,6 +50,7 @@ function App() {
     // ... imports
     <QueryClientProvider client={queryClient}>
       <Router>
+        <ScrollToTop />
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
           <Navbar />
           <main>

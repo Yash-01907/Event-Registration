@@ -125,7 +125,7 @@ export default function Register() {
             Create an account
           </h2>
           <p className="mt-2 text-sm text-gray-500 font-mono">
-            Join TechFest 2026 to discover events
+            Join UDAAN 2026 to discover events
           </p>
         </div>
 

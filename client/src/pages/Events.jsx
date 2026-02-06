@@ -67,7 +67,7 @@ export default function Events() {
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mx-auto rounded-full mb-4" />
           <p className="text-gray-500 max-w-2xl mx-auto font-mono text-sm">
-            // Explore tech, sports, and cultural events at TechFest 2026
+            // Explore tech, sports, and cultural events at UDAAN 2026
           </p>
         </div>
 
