@@ -34,7 +34,7 @@ export default function EventRegistrations() {
       // Log error internally if needed, or just let setError handle UI feedback
       setError(
         err.response?.data?.message ||
-        "Failed to fetch registration data. Ensure you are authorized.",
+          "Failed to fetch registration data. Ensure you are authorized.",
       );
     } finally {
       setIsLoading(false);
@@ -154,7 +154,8 @@ export default function EventRegistrations() {
             </div>
 
             <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm overflow-hidden">
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-secondary/50 text-xs uppercase text-gray-400 font-semibold border-b border-white/10">
                     <tr>
@@ -191,17 +192,20 @@ export default function EventRegistrations() {
                             {reg.student.rollNumber || "N/A"}
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            <div className="text-white">{reg.student.email}</div>
+                            <div className="text-white">
+                              {reg.student.email}
+                            </div>
                             <div className="text-gray-500 text-xs">
                               {reg.student.phone || "N/A"}
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${reg.type === "MANUAL"
-                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                }`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                reg.type === "MANUAL"
+                                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              }`}
                             >
                               {reg.type}
                             </span>
@@ -224,6 +228,71 @@ export default function EventRegistrations() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden">
+                {filteredRegistrations.length === 0 ? (
+                  <div className="px-6 py-8 text-center text-gray-500">
+                    No registrations found matching your search.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {filteredRegistrations.map((reg) => (
+                      <div
+                        key={reg.id}
+                        className="p-4 space-y-3 hover:bg-white/5 transition-colors"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium text-white">
+                              {reg.student.name}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {reg.student.email}
+                            </div>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              reg.type === "MANUAL"
+                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            }`}
+                          >
+                            {reg.type}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 font-mono">
+                          <div>
+                            <span className="block text-gray-600">
+                              Roll No:
+                            </span>
+                            <span className="text-gray-400">
+                              {reg.student.rollNumber || "N/A"}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="block text-gray-600">Date:</span>
+                            <span className="text-gray-400">
+                              {formatDate(reg.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedRegistration(reg)}
+                          className="w-full bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10 h-8 text-xs"
+                        >
+                          <Eye className="h-3 w-3 mr-2" />
+                          View Details
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="px-6 py-4 border-t border-white/10 text-xs text-gray-500 bg-secondary/30">
                 Total Registrations: {filteredRegistrations.length}

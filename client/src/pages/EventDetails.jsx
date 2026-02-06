@@ -173,7 +173,7 @@ export default function EventDetails() {
                 Closed
               </span>
             )}
-            <h1 className="text-4xl md:text-5xl md:leading-tight font-bold font-heading text-white mb-2 tracking-wide">
+            <h1 className="text-2xl md:text-5xl md:leading-tight font-bold font-heading text-white mb-2 tracking-wide">
               {event.name}
             </h1>
             <div className="flex flex-wrap items-center gap-6 text-gray-300 mt-4 font-mono text-sm">

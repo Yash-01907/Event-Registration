@@ -209,7 +209,7 @@ export default function Landing() {
       <div className="absolute inset-0 hex-pattern opacity-50 pointer-events-none" />
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-24 overflow-hidden">
+      <section className="relative pt-20 pb-16 md:pt-28 md:pb-24 overflow-hidden">
         {/* Grid Pattern */}
         <div className="absolute inset-0 grid-pattern opacity-40" />
 
@@ -228,24 +228,24 @@ export default function Landing() {
           {/* Glowing Badge */}
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 text-sm font-mono mb-8 pulse-ring">
             <Sparkles className="h-4 w-4 animate-pulse" />
-            <span>FEBRUARY 20-22, 2026</span>
+            <span>FEBRUARY 23-25, 2026</span>
             <span className="text-gray-600">•</span>
             <span>GDEC CAMPUS</span>
           </div>
 
           {/* Main Title with Glitch Effect */}
           <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-black tracking-wider mb-4">
-            <span
+            {/* <span
               className="text-white text-glow-white glitch inline-block"
               data-text="TECH"
             >
               TECH
-            </span>
+            </span> */}
             <span
               className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 glitch inline-block"
               data-text="FEST"
             >
-              FEST
+              UDAAN
             </span>
           </h1>
 
@@ -260,7 +260,7 @@ export default function Landing() {
           </div>
 
           {/* Typing Subtitle */}
-          <div className="h-8 mb-10">
+          <div className="min-h-8 mb-10">
             <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
               <TypingText text="The ultimate convergence of technology, innovation, and creativity..." />
             </p>
@@ -283,14 +283,16 @@ export default function Landing() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/register">
-              <Button
-                variant="outline"
-                className="border-2 border-gray-700 text-gray-300 hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/50 px-10 py-7 text-lg rounded-xl font-semibold"
-              >
-                REGISTER NOW
-              </Button>
-            </Link>
+            {!user && (
+              <Link to="/register">
+                <Button
+                  variant="outline"
+                  className="border-2 border-gray-700 text-gray-300 hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/50 px-10 py-7 text-lg rounded-xl font-semibold"
+                >
+                  REGISTER NOW
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Event Count Badge */}
@@ -326,7 +328,10 @@ export default function Landing() {
                 <div className="hidden sm:block h-8 w-px bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent mx-2" />
 
                 {/* CTA - redirects based on auth status */}
-                <Link to={user ? "/events" : "/login"} className="hidden sm:block">
+                <Link
+                  to={user ? "/events" : "/login"}
+                  className="hidden sm:block"
+                >
                   <span className="text-sm font-bold text-cyan-400 hover:text-cyan-300 transition-colors font-mono">
                     {user ? "VIEW EVENTS →" : "JOIN NOW →"}
                   </span>
@@ -345,7 +350,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           {/* Section Header */}
           <div className="mb-12 text-center">
-            <h2 className="font-heading text-3xl md:text-5xl font-bold text-white tracking-wide mb-4">
+            <h2 className="font-heading text-2xl md:text-5xl font-bold text-white tracking-wide mb-4">
               <span className="text-cyan-400">&lt;</span>
               UPCOMING
               <span className="text-purple-400">/</span>
@@ -450,7 +455,7 @@ export default function Landing() {
                           <span
                             className={cn(
                               "px-3 py-1.5 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border backdrop-blur-sm",
-                              getCategoryColor(event.category)
+                              getCategoryColor(event.category),
                             )}
                           >
                             {event.category}

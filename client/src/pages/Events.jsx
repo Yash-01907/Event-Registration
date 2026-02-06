@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Calendar, MapPin, ArrowRight, Cpu, Zap, Trophy, Music, Loader2 } from "lucide-react";
+import {
+  Search,
+  Calendar,
+  MapPin,
+  ArrowRight,
+  Cpu,
+  Zap,
+  Trophy,
+  Music,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEvents } from "@/hooks/useEvents";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -48,7 +58,7 @@ export default function Events() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-heading text-white mb-4 tracking-wide">
+          <h1 className="text-2xl md:text-5xl font-bold font-heading text-white mb-4 tracking-wide">
             <span className="text-cyan-400">&lt;</span>
             DISCOVER
             <span className="text-purple-400">/</span>
@@ -76,7 +86,7 @@ export default function Events() {
                       "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap font-mono uppercase tracking-wide",
                       selectedCategory === cat.id
                         ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg glow-cyan"
-                        : "bg-white/5 text-gray-400 border border-gray-800 hover:border-cyan-500/30 hover:text-cyan-400"
+                        : "bg-white/5 text-gray-400 border border-gray-800 hover:border-cyan-500/30 hover:text-cyan-400",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -106,7 +116,9 @@ export default function Events() {
             <div className="flex justify-center items-center h-64">
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-10 w-10 animate-spin text-cyan-400" />
-                <p className="text-gray-500 font-mono text-sm">Loading events...</p>
+                <p className="text-gray-500 font-mono text-sm">
+                  Loading events...
+                </p>
               </div>
             </div>
           ) : error ? (
@@ -153,7 +165,7 @@ export default function Events() {
                       <span
                         className={cn(
                           "px-3 py-1.5 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border backdrop-blur-sm",
-                          getCategoryColor(event.category)
+                          getCategoryColor(event.category),
                         )}
                       >
                         {event.category}
@@ -179,10 +191,10 @@ export default function Events() {
                         <Calendar className="h-4 w-4 mr-2 text-cyan-500" />
                         {event.date
                           ? new Date(event.date).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
                           : "Date TBA"}
                       </div>
                       <div className="flex items-center text-sm text-gray-400 font-mono">

@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Loader2, Users, Cpu, Edit, ClipboardList } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Loader2,
+  Users,
+  Cpu,
+  Edit,
+  ClipboardList,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -45,21 +53,25 @@ export default function CoordinatorDashboard() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold font-heading text-white tracking-wide flex items-center gap-3">
+          <h1 className="text-3xl md:text-4xl font-bold font-heading text-white tracking-wide flex flex-wrap items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
               <ClipboardList className="h-6 w-6 text-white" />
             </div>
             <span className="text-cyan-400">COORDINATOR</span>
             <span className="text-white">DASHBOARD</span>
           </h1>
-          <p className="text-gray-500 mt-2 font-mono text-sm">// Events assigned to you</p>
+          <p className="text-gray-500 mt-2 font-mono text-sm">
+            // Events assigned to you
+          </p>
         </div>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center gap-4">
               <Loader2 className="h-10 w-10 animate-spin text-cyan-400" />
-              <p className="text-gray-500 font-mono text-sm animate-pulse">LOADING EVENTS...</p>
+              <p className="text-gray-500 font-mono text-sm animate-pulse">
+                LOADING EVENTS...
+              </p>
             </div>
           </div>
         ) : error ? (
@@ -78,7 +90,8 @@ export default function CoordinatorDashboard() {
           </div>
         ) : (
           <div className="glass-card rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="border-b border-gray-800">
                   <tr className="text-xs uppercase text-gray-500 font-mono tracking-wider">
@@ -107,7 +120,7 @@ export default function CoordinatorDashboard() {
                         <span
                           className={cn(
                             "px-3 py-1 rounded-lg text-xs font-bold font-mono uppercase border",
-                            getCategoryColor(event.category)
+                            getCategoryColor(event.category),
                           )}
                         >
                           {event.category}
@@ -123,7 +136,9 @@ export default function CoordinatorDashboard() {
                           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
                             {event.mainCoordinator?.name?.charAt(0) || "F"}
                           </div>
-                          <span className="text-gray-300">{event.mainCoordinator?.name}</span>
+                          <span className="text-gray-300">
+                            {event.mainCoordinator?.name}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -138,7 +153,9 @@ export default function CoordinatorDashboard() {
                               Edit
                             </Button>
                           </Link>
-                          <Link to={`/dashboard/event/${event.id}/registrations`}>
+                          <Link
+                            to={`/dashboard/event/${event.id}/registrations`}
+                          >
                             <Button
                               variant="outline"
                               size="sm"
@@ -154,6 +171,81 @@ export default function CoordinatorDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden grid gap-4 p-4">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-white text-lg">
+                        {event.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 font-mono mt-1 line-clamp-2">
+                        {event.description}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "px-2 py-1 rounded-md text-[10px] font-bold font-mono uppercase border",
+                        getCategoryColor(event.category),
+                      )}
+                    >
+                      {event.category}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between text-gray-400">
+                      <span>Date:</span>
+                      <span className="text-gray-300 font-mono">
+                        {event.date
+                          ? new Date(event.date).toLocaleDateString()
+                          : "TBA"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-gray-400">
+                      <span>Main Coordinator:</span>
+                      <span className="text-gray-300">
+                        {event.mainCoordinator?.name}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2 border-t border-white/5">
+                    <Link
+                      to={`/dashboard/event/${event.id}`}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-transparent border-gray-700 text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/10 font-mono text-xs"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Link
+                      to={`/dashboard/event/${event.id}/registrations`}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-transparent border-gray-700 text-gray-400 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/10 font-mono text-xs"
+                      >
+                        <Users className="h-3 w-3 mr-1" />
+                        Registrations
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
