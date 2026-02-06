@@ -174,6 +174,7 @@ const updateUserProfile = async (req, res) => {
       role: updatedUser.role,
       rollNumber: updatedUser.rollNumber,
       branch: updatedUser.branch,
+      semester: updatedUser.semester,
       phone: updatedUser.phone,
       coordinatedEvents: updatedUser.coordinatedEvents,
     });

@@ -19,6 +19,7 @@ const protect = async (req, res, next) => {
           role: true,
           rollNumber: true,
           branch: true,
+          semester: true,
           phone: true,
           coordinatedEvents: {
             select: { id: true },

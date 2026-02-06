@@ -14,8 +14,8 @@ export default function Footer() {
               </div>
               <div>
                 <span className="font-heading font-bold text-lg">
-                  <span className="text-cyan-400">TECH</span>
-                  <span className="text-white">FEST</span>
+                  {/* <span className="text-cyan-400">TECH</span> */}
+                  <span className="text-white">UDAAN</span>
                   <span className="text-purple-400 ml-1 text-sm font-mono">2026</span>
                 </span>
               </div>

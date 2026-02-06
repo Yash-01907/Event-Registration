@@ -67,7 +67,7 @@ export default function Events() {
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mx-auto rounded-full mb-4" />
           <p className="text-gray-500 max-w-2xl mx-auto font-mono text-sm">
-            // Explore tech, sports, and cultural events at UDAAN 2026
+            // Explore tech events at UDAAN 2026
           </p>
         </div>
 
@@ -75,7 +75,7 @@ export default function Events() {
         <div className="glass-card rounded-2xl p-5 mb-10 border-glow">
           <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
             {/* Category Pills */}
-            <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto">
+            {/* <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto">
               {categories.map((cat) => {
                 const Icon = cat.icon;
                 return (
@@ -94,7 +94,7 @@ export default function Events() {
                   </button>
                 );
               })}
-            </div>
+            </div> */}
 
             {/* Search Bar */}
             <div className="relative w-full lg:w-80">
