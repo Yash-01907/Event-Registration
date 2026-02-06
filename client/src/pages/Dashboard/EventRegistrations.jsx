@@ -31,6 +31,7 @@ export default function EventRegistrations() {
       setRegistrations(regsRes.data);
       setEvent(eventRes.data);
     } catch (err) {
+      // Log error internally if needed, or just let setError handle UI feedback
       setError(
         err.response?.data?.message ||
         "Failed to fetch registration data. Ensure you are authorized.",
