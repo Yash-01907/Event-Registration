@@ -176,7 +176,7 @@ const getEventRegistrations = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user.id)) {
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user)) {
       return res
         .status(403)
         .json({ message: "Not authorized to view these registrations" });
@@ -229,7 +229,7 @@ const createManualRegistration = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user.id)) {
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user)) {
       return res.status(403).json({
         message: "Not authorized to add registrations for this event",
       });
