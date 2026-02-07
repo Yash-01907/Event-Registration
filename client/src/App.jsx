@@ -18,7 +18,6 @@ import Profile from '@/pages/Profile';
 import FacultyDashboard from '@/pages/Dashboard/FacultyDashboard';
 import useAuthStore from '@/store/authStore';
 import ScrollToTop from '@/components/shared/ScrollToTop';
-import { Analytics } from '@vercel/analytics/react';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -123,7 +122,6 @@ function App() {
           <Toaster richColors position='top-right' theme='dark' />
         </div>
       </Router>
-      <Analytics />
     </QueryClientProvider>
   );
 }
