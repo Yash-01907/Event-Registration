@@ -22,6 +22,11 @@ const createEvent = async (req, res) => {
         minTeamSize: req.body.minTeamSize ? parseInt(req.body.minTeamSize) : 1,
         maxTeamSize: req.body.maxTeamSize ? parseInt(req.body.maxTeamSize) : 1,
         formConfig: req.body.formConfig || null,
+        semControlEnabled: req.body.semControlEnabled || false,
+        maxSem:
+          req.body.semControlEnabled && req.body.maxSem != null
+            ? parseInt(req.body.maxSem)
+            : null,
       },
     });
 
@@ -37,10 +42,22 @@ const createEvent = async (req, res) => {
 // @access  Public
 const getEvents = async (req, res) => {
   try {
+    const where = { isPublished: true };
+    if (req.user?.role === 'STUDENT' && req.user?.semester != null) {
+      where.AND = [
+        {
+          OR: [
+            { semControlEnabled: false },
+            {
+              semControlEnabled: true,
+              maxSem: { gte: req.user.semester },
+            },
+          ],
+        },
+      ];
+    }
     const events = await prisma.event.findMany({
-      where: {
-        isPublished: true,
-      },
+      where,
       include: {
         mainCoordinator: {
           select: {
@@ -107,11 +124,22 @@ const getEventById = async (req, res) => {
       },
     });
 
-    if (event) {
-      res.status(200).json(event);
-    } else {
-      res.status(404).json({ message: 'Event not found' });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
     }
+
+    // Sem-control: hide from students with semester > maxSem
+    if (
+      event.semControlEnabled &&
+      event.maxSem != null &&
+      req.user?.role === 'STUDENT' &&
+      req.user?.semester != null &&
+      req.user.semester > event.maxSem
+    ) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    res.status(200).json(event);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error fetching event' });
@@ -171,6 +199,11 @@ const updateEvent = async (req, res) => {
           ? parseInt(req.body.maxTeamSize)
           : undefined,
         formConfig: req.body.formConfig,
+        semControlEnabled: req.body.semControlEnabled,
+        maxSem:
+          req.body.semControlEnabled && req.body.maxSem != null
+            ? parseInt(req.body.maxSem)
+            : null,
       },
     });
 

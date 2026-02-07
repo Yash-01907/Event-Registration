@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")        // Uses the pooled connection
-  directUrl = env("DIRECT_URL")          // Uses the direct connection for migrations
+  url       = env("DATABASE_URL") // Uses the pooled connection
+  directUrl = env("DIRECT_URL") // Uses the direct connection for migrations
 }
 
 enum Role {
@@ -26,15 +26,15 @@ enum Category {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  password    String
-  name        String
-  role        Role     @default(STUDENT)
-  rollNumber  String?
-  branch      String?
-  semester    Int?
-  phone       String?
+  id         String  @id @default(uuid())
+  email      String  @unique
+  password   String
+  name       String
+  role       Role    @default(STUDENT)
+  rollNumber String?
+  branch     String?
+  semester   Int?
+  phone      String?
 
   eventsOwned       Event[]        @relation("FacultyOwner")
   coordinatedEvents Event[]        @relation("EventCoordinators")
@@ -42,30 +42,34 @@ model User {
 }
 
 model Event {
-  id                String   @id @default(uuid())
-  name              String
-  description       String?
-  date              DateTime?
-  location          String?
-  fees              Int      @default(0)
-  category          Category?
-  posterUrl         String?
-  isPublished       Boolean  @default(false)
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  date        DateTime?
+  location    String?
+  fees        Int       @default(0)
+  category    Category?
+  posterUrl   String?
+  isPublished Boolean   @default(false)
 
   maxParticipants      Int?
   registrationDeadline DateTime?
 
   mainCoordinatorId String
-  mainCoordinator   User     @relation("FacultyOwner", fields: [mainCoordinatorId], references: [id])
+  mainCoordinator   User   @relation("FacultyOwner", fields: [mainCoordinatorId], references: [id])
 
   // New Fields for Team and Custom Forms
-  isTeamEvent     Boolean  @default(false)
-  minTeamSize     Int      @default(1)
-  maxTeamSize     Int      @default(1)
-  formConfig      Json?    // Array of field definitions
+  isTeamEvent Boolean @default(false)
+  minTeamSize Int     @default(1)
+  maxTeamSize Int     @default(1)
+  formConfig  Json? // Array of field definitions
 
-  coordinators      User[]          @relation("EventCoordinators")
-  registrations     Registration[]
+  // Sem-control: restrict event to students with semester <= maxSem
+  semControlEnabled Boolean @default(false)
+  maxSem            Int?
+
+  coordinators  User[]         @relation("EventCoordinators")
+  registrations Registration[]
 }
 
 model Registration {
@@ -78,11 +82,11 @@ model Registration {
 
   // New Fields for Team and Custom Forms
   teamName    String?
-  teamMembers Json?    // Array of strings (names or emails)
-  formData    Json?    // Key-value store for custom form answers
+  teamMembers Json? // Array of strings (names or emails)
+  formData    Json? // Key-value store for custom form answers
 
-  event     Event    @relation(fields: [eventId], references: [id])
-  student   User     @relation(fields: [studentId], references: [id])
+  event   Event @relation(fields: [eventId], references: [id])
+  student User  @relation(fields: [studentId], references: [id])
 
   @@unique([eventId, studentId])
 }

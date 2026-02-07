@@ -10,18 +10,18 @@ import {
   getCoordinatedEvents,
   togglePublishStatus,
 } from '../controllers/eventController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, optionalAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.route('/').post(protect, createEvent).get(getEvents);
+router.route('/').post(protect, createEvent).get(optionalAuth, getEvents);
 
 router.get('/my-events', protect, getMyEvents);
 router.get('/coordinated-events', protect, getCoordinatedEvents);
 
 router
   .route('/:id')
-  .get(getEventById)
+  .get(optionalAuth, getEventById)
   .put(protect, updateEvent)
   .delete(protect, deleteEvent);
 router.post('/:id/coordinator', protect, addCoordinator);

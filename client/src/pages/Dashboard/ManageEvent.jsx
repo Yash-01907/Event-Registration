@@ -32,7 +32,6 @@ export default function ManageEvent() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [coordEmail, setCoordEmail] = useState('');
   const [questions, setQuestions] = useState([]);
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
@@ -45,6 +44,7 @@ export default function ManageEvent() {
   } = useForm();
 
   const isTeamEvent = watch('isTeamEvent');
+  const semControlEnabled = watch('semControlEnabled');
 
   const fetchEvent = useCallback(async () => {
     try {
@@ -67,11 +67,13 @@ export default function ManageEvent() {
       setValue('isTeamEvent', data.isTeamEvent);
       setValue('minTeamSize', data.minTeamSize);
       setValue('maxTeamSize', data.maxTeamSize);
+      setValue('semControlEnabled', data.semControlEnabled ?? false);
+      setValue('maxSem', data.maxSem ?? '');
       if (data.formConfig) setQuestions(data.formConfig);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch event', error);
-      setMessage({ type: 'error', text: 'Failed to load event details' });
+      toast.error('Failed to load event details');
       setLoading(false);
     }
   }, [id, setValue]);
@@ -83,16 +85,20 @@ export default function ManageEvent() {
   const onUpdateEvent = useCallback(
     async (data) => {
       setSaving(true);
-      setMessage({ type: '', text: '' });
+      const payload = {
+        ...data,
+        formConfig: questions,
+        maxSem:
+          data.semControlEnabled && data.maxSem != null
+            ? parseInt(data.maxSem)
+            : null,
+      };
       try {
-        await api.put(`/events/${id}`, { ...data, formConfig: questions });
-        setMessage({ type: 'success', text: 'Event updated successfully' });
+        await api.put(`/events/${id}`, payload);
+        toast.success('Event updated successfully');
         fetchEvent();
       } catch (error) {
-        setMessage({
-          type: 'error',
-          text: error.response?.data?.message || 'Failed to update event',
-        });
+        toast.error(error.response?.data?.message || 'Failed to update event');
       } finally {
         setSaving(false);
       }
@@ -106,7 +112,6 @@ export default function ManageEvent() {
 
   const onDeleteEvent = useCallback(async () => {
     setDeleting(true);
-    setMessage({ type: '', text: '' });
     try {
       await api.delete(`/events/${id}`);
       toast.success('Event deleted successfully');
@@ -123,18 +128,14 @@ export default function ManageEvent() {
       setSaving(true);
       const res = await api.patch(`/events/${id}/publish`);
       setEvent((prev) => ({ ...prev, isPublished: res.data.isPublished }));
-      setMessage({
-        type: 'success',
-        text: `Event ${
+      toast.success(
+        `Event ${
           res.data.isPublished ? 'Published' : 'Unpublished'
-        } successfully`,
-      });
+        } successfully`
+      );
     } catch (error) {
       console.error('Failed to toggle publish status', error);
-      setMessage({
-        type: 'error',
-        text: error.response?.data?.message || 'Failed to update status',
-      });
+      toast.error(error.response?.data?.message || 'Failed to update status');
     } finally {
       setSaving(false);
     }
@@ -146,25 +147,20 @@ export default function ManageEvent() {
       if (!coordEmail) return;
 
       if (user && coordEmail === user.email) {
-        setMessage({
-          type: 'error',
-          text: 'You cannot add yourself as a coordinator',
-        });
+        toast.error('You cannot add yourself as a coordinator');
         return;
       }
 
       setAddingCoord(true);
-      setMessage({ type: '', text: '' });
       try {
         await api.post(`/events/${id}/coordinator`, { email: coordEmail });
         setCoordEmail('');
-        setMessage({ type: 'success', text: 'Coordinator added successfully' });
+        toast.success('Coordinator added successfully');
         fetchEvent();
       } catch (error) {
-        setMessage({
-          type: 'error',
-          text: error.response?.data?.message || 'Failed to add coordinator',
-        });
+        toast.error(
+          error.response?.data?.message || 'Failed to add coordinator'
+        );
       } finally {
         setAddingCoord(false);
       }
@@ -191,7 +187,7 @@ export default function ManageEvent() {
         }
       } catch (error) {
         console.error('Upload failed', error);
-        setMessage({ type: 'error', text: 'Failed to upload image' });
+        toast.error('Failed to upload image');
       } finally {
         setUploading(false);
       }
@@ -290,19 +286,6 @@ export default function ManageEvent() {
                   {event.isPublished ? 'Published' : 'Draft'}
                 </Button>
               </div>
-
-              {message.text && (
-                <div
-                  className={cn(
-                    'mb-4 p-3 rounded-md text-sm border',
-                    message.type === 'error'
-                      ? 'bg-destructive/10 border-destructive/20 text-destructive'
-                      : 'bg-green-500/10 border-green-500/20 text-green-500'
-                  )}
-                >
-                  {message.text}
-                </div>
-              )}
 
               <form
                 onSubmit={handleSubmit(onUpdateEvent)}
@@ -446,6 +429,57 @@ export default function ManageEvent() {
                     className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                     {...register('description')}
                   />
+                </div>
+
+                {/* Sem-control */}
+                <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                  <div className='flex items-center gap-2'>
+                    <input
+                      type='checkbox'
+                      id='edit-semControlEnabled'
+                      className='h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary'
+                      {...register('semControlEnabled')}
+                    />
+                    <label
+                      htmlFor='edit-semControlEnabled'
+                      className='text-sm font-medium text-foreground'
+                    >
+                      Sem-control
+                    </label>
+                  </div>
+                  {semControlEnabled && (
+                    <div className='animate-in fade-in slide-in-from-top-2'>
+                      <label className='text-sm font-medium text-muted-foreground'>
+                        Max Semester (event visible to students with sem ≤ this)
+                      </label>
+                      <select
+                        className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                        {...register('maxSem', {
+                          required: semControlEnabled
+                            ? 'Max sem is required when sem-control is enabled'
+                            : false,
+                        })}
+                      >
+                        <option value='' className='bg-background'>
+                          Select semester
+                        </option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                          <option
+                            key={sem}
+                            value={sem}
+                            className='bg-background'
+                          >
+                            {sem}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.maxSem && (
+                        <p className='mt-1 text-xs text-destructive'>
+                          {errors.maxSem.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Team Event Settings */}
