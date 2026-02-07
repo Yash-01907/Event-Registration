@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import useAuthStore from '@/store/authStore';
 
 export function useEvents() {
   return useQuery({
@@ -19,6 +20,19 @@ export function useEvent(id) {
       return data;
     },
     enabled: !!id,
+  });
+}
+
+/** My registrations - used to show "Registered" on event cards. Only runs when user is logged in. */
+export function useMyRegistrations() {
+  const user = useAuthStore((s) => s.user);
+  return useQuery({
+    queryKey: ['my-registrations'],
+    queryFn: async () => {
+      const { data } = await api.get('/registrations/my');
+      return data;
+    },
+    enabled: !!user,
   });
 }
 

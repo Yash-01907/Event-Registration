@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { useEvents } from '@/hooks/useEvents';
+import { useEvents, useMyRegistrations } from '@/hooks/useEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import useAuthStore from '@/store/authStore';
 import {
@@ -133,9 +133,16 @@ const TECH_FEST_DATE = '2026-02-25T09:00:00';
 
 export default function Landing() {
   const { data: events, isLoading, error } = useEvents();
+  const { data: myRegistrations = [], refetch: refetchMyRegistrations } =
+    useMyRegistrations();
   const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
+
+  const registeredEventIds = useMemo(
+    () => new Set((myRegistrations || []).map((r) => r.eventId)),
+    [myRegistrations]
+  );
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];
@@ -380,7 +387,13 @@ export default function Landing() {
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {filteredEvents.map((event, idx) => (
-                  <EventCard key={event.id} event={event} index={idx} />
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    index={idx}
+                    isRegistered={registeredEventIds.has(event.id)}
+                    onRegistrationSuccess={refetchMyRegistrations}
+                  />
                 ))}
               </div>
             )}

@@ -1,8 +1,22 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, MapPin, Users, Cpu, ChevronRight } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Cpu,
+  ChevronRight,
+  Ticket,
+  CheckCircle2,
+} from 'lucide-react';
+import useAuthStore from '@/store/authStore';
+import api from '@/lib/api';
+import { toast } from 'sonner';
+import EventRegistrationModal from '@/components/events/EventRegistrationModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'Date TBA';
@@ -26,10 +40,60 @@ const getCategoryColor = (category) => {
   }
 };
 
-const EventCard = memo(function EventCard({ event, index }) {
+const EventCard = memo(function EventCard({
+  event,
+  index,
+  isRegistered: isRegisteredFromApi = false,
+  onRegistrationSuccess,
+}) {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
+  const [simpleConfirmOpen, setSimpleConfirmOpen] = useState(false);
+  const [registering, setRegistering] = useState(false);
+  const [hasRegistered, setHasRegistered] = useState(false);
+
+  const isRegistered = isRegisteredFromApi || hasRegistered;
+
   const isFull =
     event.maxParticipants &&
     event._count?.registrations >= event.maxParticipants;
+  const isClosed =
+    event.registrationDeadline &&
+    new Date() > new Date(event.registrationDeadline);
+  const canRegister = !isFull && !isClosed;
+
+  const needsModal =
+    event.isTeamEvent || (event.formConfig && event.formConfig.length > 0);
+
+  const handleRegisterClick = (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (isRegistered || !canRegister) return;
+    if (needsModal) {
+      setRegistrationModalOpen(true);
+    } else {
+      setSimpleConfirmOpen(true);
+    }
+  };
+
+  const handleSimpleRegisterConfirm = async () => {
+    setRegistering(true);
+    try {
+      await api.post('/registrations', { eventId: event.id });
+      setSimpleConfirmOpen(false);
+      setHasRegistered(true);
+      onRegistrationSuccess?.();
+      toast.success('Successfully registered for the event!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Registration failed');
+    } finally {
+      setRegistering(false);
+    }
+  };
 
   return (
     <div
@@ -93,21 +157,73 @@ const EventCard = memo(function EventCard({ event, index }) {
             </span>
           </div>
         </div>
-        {isFull ? (
-          <Button
-            disabled
-            className='w-full bg-gray-800 text-gray-500 cursor-not-allowed font-mono'
-          >
-            SOLD OUT
-          </Button>
-        ) : (
-          <Link to={`/events/${event.id}`}>
-            <Button className='w-full btn-neon bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30 hover:from-cyan-500 hover:to-purple-600 hover:text-white font-bold font-mono group/btn'>
+        <div className='flex gap-2'>
+          <Link to={`/events/${event.id}`} className='flex-1 min-w-0'>
+            <Button
+              variant='outline'
+              className='w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-mono text-sm'
+            >
               VIEW DETAILS
-              <ChevronRight className='ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1' />
+              <ChevronRight className='ml-1 h-4 w-4' />
             </Button>
           </Link>
-        )}
+          <Button
+            onClick={handleRegisterClick}
+            disabled={isFull || isClosed || isRegistered}
+            className={cn(
+              'flex-1 min-w-0 font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed',
+              isRegistered
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : 'btn-neon bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30 hover:from-cyan-500 hover:to-purple-600 hover:text-white font-bold'
+            )}
+          >
+            {isRegistered ? (
+              <>
+                <CheckCircle2 className='mr-1 h-4 w-4' />
+                REGISTERED
+              </>
+            ) : isFull ? (
+              'SOLD OUT'
+            ) : isClosed ? (
+              'CLOSED'
+            ) : (
+              <>
+                <Ticket className='mr-1 h-4 w-4' />
+                REGISTER
+              </>
+            )}
+          </Button>
+        </div>
+
+        {event &&
+          (registrationModalOpen || simpleConfirmOpen) &&
+          createPortal(
+            <>
+              <EventRegistrationModal
+                isOpen={registrationModalOpen}
+                onClose={() => setRegistrationModalOpen(false)}
+                event={event}
+                onRegistrationSuccess={() => {
+                  setRegistrationModalOpen(false);
+                  setHasRegistered(true);
+                  onRegistrationSuccess?.();
+                  toast.success('Successfully registered!');
+                }}
+              />
+              <ConfirmDialog
+                open={simpleConfirmOpen}
+                onOpenChange={setSimpleConfirmOpen}
+                title='Confirm Registration'
+                description={`Register for "${event.name}"?`}
+                confirmLabel='Yes, Register'
+                cancelLabel='Cancel'
+                variant='default'
+                loading={registering}
+                onConfirm={handleSimpleRegisterConfirm}
+              />
+            </>,
+            document.body
+          )}
       </div>
     </div>
   );

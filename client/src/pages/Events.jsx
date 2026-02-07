@@ -1,13 +1,20 @@
 import { useState, useMemo } from 'react';
 import { Search, Cpu, Loader2 } from 'lucide-react';
-import { useEvents } from '@/hooks/useEvents';
+import { useEvents, useMyRegistrations } from '@/hooks/useEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import EventCard from '@/components/events/EventCard';
 
 export default function Events() {
   const { data: events, isLoading, error } = useEvents();
+  const { data: myRegistrations = [], refetch: refetchMyRegistrations } =
+    useMyRegistrations();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
+
+  const registeredEventIds = useMemo(
+    () => new Set((myRegistrations || []).map((r) => r.eventId)),
+    [myRegistrations]
+  );
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];
@@ -82,7 +89,13 @@ export default function Events() {
           ) : (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {filteredEvents.map((event, idx) => (
-                <EventCard key={event.id} event={event} index={idx} />
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  index={idx}
+                  isRegistered={registeredEventIds.has(event.id)}
+                  onRegistrationSuccess={refetchMyRegistrations}
+                />
               ))}
             </div>
           )}
