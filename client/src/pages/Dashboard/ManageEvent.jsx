@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEvent, useUpdateEvent } from '@/hooks/useEvents';
+import {
+  useEvent,
+  useUpdateEvent,
+  useDeleteEvent,
+  useTogglePublishEvent,
+  useAddCoordinator,
+  useUploadPoster,
+} from '@/hooks/useEvents';
 import { useForm } from 'react-hook-form';
 import {
   ArrowLeft,
@@ -16,7 +22,6 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import api from '@/lib/api';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cn } from '@/lib/utils';
@@ -156,21 +161,21 @@ const ManageEventSkeleton = () => (
 export default function ManageEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { data: event, isLoading: loading, error } = useEvent(id);
   const updateEventMutation = useUpdateEvent(id);
+  const deleteEventMutation = useDeleteEvent();
+  const togglePublishMutation = useTogglePublishEvent();
+  const addCoordinatorMutation = useAddCoordinator(id);
+  const uploadPosterMutation = useUploadPoster();
 
-  const [addingCoord, setAddingCoord] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [togglingPublish, setTogglingPublish] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [coordEmail, setCoordEmail] = useState('');
   const [questions, setQuestions] = useState([]);
-  const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const saving = updateEventMutation.isPending || togglingPublish;
+  const saving =
+    updateEventMutation.isPending || togglePublishMutation.isPending;
 
   const {
     register,
@@ -233,43 +238,31 @@ export default function ManageEvent() {
   const canAddCoordinator = isMainCoordinator || isAdmin;
 
   const onDeleteEvent = useCallback(async () => {
-    setDeleting(true);
     try {
-      await api.delete(`/events/${id}`);
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['events', id] });
-      queryClient.invalidateQueries({ queryKey: ['my-events'] });
+      await deleteEventMutation.mutateAsync(id);
       toast.success('Event deleted successfully');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete event');
-    } finally {
-      setDeleting(false);
+      throw error;
     }
-  }, [id, navigate, queryClient]);
+  }, [id, navigate, deleteEventMutation]);
 
-  const onTogglePublish = useCallback(async () => {
-    setTogglingPublish(true);
-    try {
-      const res = await api.patch(`/events/${id}/publish`);
-      const newPublished = res.data.isPublished;
-      queryClient.setQueryData(['events', id], (old) =>
-        old ? { ...old, isPublished: newPublished } : old
-      );
-      queryClient.invalidateQueries({ queryKey: ['my-events'] });
-      toast.success(
-        `${newPublished ? 'Published' : 'Unpublished'} successfully`
-      );
-    } catch (error) {
-      console.error('Failed to toggle publish status', error);
-      toast.error(error.response?.data?.message || 'Failed to update status');
-    } finally {
-      setTogglingPublish(false);
-    }
-  }, [id, queryClient]);
+  const onTogglePublish = useCallback(() => {
+    togglePublishMutation.mutate(id, {
+      onSuccess: (data) => {
+        toast.success(
+          `${data?.isPublished ? 'Published' : 'Unpublished'} successfully`
+        );
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update status');
+      },
+    });
+  }, [togglePublishMutation]);
 
   const onAddCoordinator = useCallback(
-    async (e) => {
+    (e) => {
       e.preventDefault();
       if (!coordEmail) return;
 
@@ -278,48 +271,42 @@ export default function ManageEvent() {
         return;
       }
 
-      setAddingCoord(true);
-      try {
-        await api.post(`/events/${id}/coordinator`, { email: coordEmail });
-        setCoordEmail('');
-        toast.success('Coordinator added successfully');
-        queryClient.invalidateQueries({ queryKey: ['events', id] });
-      } catch (error) {
-        toast.error(
-          error.response?.data?.message || 'Failed to add coordinator'
-        );
-      } finally {
-        setAddingCoord(false);
-      }
+      addCoordinatorMutation.mutate(coordEmail, {
+        onSuccess: () => {
+          setCoordEmail('');
+          toast.success('Coordinator added successfully');
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data?.message || 'Failed to add coordinator'
+          );
+        },
+      });
     },
-    [id, coordEmail, user, queryClient]
+    [coordEmail, user, addCoordinatorMutation]
   );
 
   const handlePosterUpload = useCallback(
-    async (e) => {
+    (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      setUploading(true);
       const formData = new FormData();
       formData.append('file', file);
 
-      try {
-        const res = await api.post('/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        if (res.data?.url) {
-          setValue('posterUrl', res.data.url);
-          setPreviewUrl(res.data.url);
-        }
-      } catch (error) {
-        console.error('Upload failed', error);
-        toast.error('Failed to upload image');
-      } finally {
-        setUploading(false);
-      }
+      uploadPosterMutation.mutate(formData, {
+        onSuccess: (data) => {
+          if (data?.url) {
+            setValue('posterUrl', data.url);
+            setPreviewUrl(data.url);
+          }
+        },
+        onError: () => {
+          toast.error('Failed to upload image');
+        },
+      });
     },
-    [setValue]
+    [setValue, uploadPosterMutation]
   );
 
   const addQuestion = useCallback(() => {
@@ -370,10 +357,10 @@ export default function ManageEvent() {
               <Button
                 variant='outline'
                 onClick={() => setDeleteConfirmOpen(true)}
-                disabled={deleting}
+                disabled={deleteEventMutation.isPending}
                 className='gap-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500'
               >
-                {deleting ? (
+                {deleteEventMutation.isPending ? (
                   <Loader2 className='h-4 w-4 animate-spin' />
                 ) : (
                   <Trash className='h-4 w-4' />
@@ -396,7 +383,7 @@ export default function ManageEvent() {
                   onClick={onTogglePublish}
                   variant='outline'
                   size='sm'
-                  disabled={saving || uploading}
+                  disabled={saving || uploadPosterMutation.isPending}
                   className={cn(
                     'border-opacity-50',
                     event.isPublished
@@ -549,12 +536,12 @@ export default function ManageEvent() {
                       <input
                         type='file'
                         accept='image/*'
-                        disabled={uploading}
+                        disabled={uploadPosterMutation.isPending}
                         className='block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed'
                         onChange={handlePosterUpload}
                       />
                       <p className='text-xs text-muted-foreground mt-1'>
-                        {uploading
+                        {uploadPosterMutation.isPending
                           ? 'Uploading...'
                           : 'Upload a poster image (JPG, PNG)'}
                       </p>
@@ -790,7 +777,10 @@ export default function ManageEvent() {
                 </div>
 
                 <div className='flex justify-end pt-4'>
-                  <Button type='submit' disabled={saving || uploading}>
+                  <Button
+                    type='submit'
+                    disabled={saving || uploadPosterMutation.isPending}
+                  >
                     {saving && (
                       <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     )}
@@ -830,9 +820,9 @@ export default function ManageEvent() {
                     <Button
                       type='submit'
                       size='sm'
-                      disabled={addingCoord || !coordEmail}
+                      disabled={addCoordinatorMutation.isPending || !coordEmail}
                     >
-                      {addingCoord ? (
+                      {addCoordinatorMutation.isPending ? (
                         <Loader2 className='h-4 w-4 animate-spin' />
                       ) : (
                         <Plus className='h-4 w-4' />
@@ -901,7 +891,7 @@ export default function ManageEvent() {
         confirmLabel='Delete'
         cancelLabel='Cancel'
         variant='danger'
-        loading={deleting}
+        loading={deleteEventMutation.isPending}
         onConfirm={onDeleteEvent}
       />
     </div>

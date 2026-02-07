@@ -4,12 +4,13 @@ import useAuthStore from '@/store/authStore';
 import { X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
+import { useCreateEvent } from '@/hooks/useEvents';
 
 export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
-  const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const { user } = useAuthStore();
+  const createEventMutation = useCreateEvent();
   const {
     register,
     handleSubmit,
@@ -22,22 +23,17 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
   const isTeamEvent = watch('isTeamEvent');
   const semControlEnabled = watch('semControlEnabled');
 
-  console.log('Current User in Modal:', user);
+  const isLoading = createEventMutation.isPending;
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
-    try {
-      await api.post('/events', data);
-      reset();
-      setPreviewUrl(null);
-      onEventCreated(); // Call the callback to refresh list
-      onClose();
-    } catch (error) {
-      console.error('Failed to create event', error);
-      // Could add toast error here
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data) => {
+    createEventMutation.mutate(data, {
+      onSuccess: () => {
+        reset();
+        setPreviewUrl(null);
+        onEventCreated?.();
+        onClose();
+      },
+    });
   };
 
   useEffect(() => {

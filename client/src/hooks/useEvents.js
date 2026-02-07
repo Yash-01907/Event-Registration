@@ -113,9 +113,91 @@ export function useDeleteEvent() {
       const { data } = await api.delete(`/events/${eventId}`);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, eventId) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
       queryClient.invalidateQueries({ queryKey: ['my-events'] });
+      queryClient.invalidateQueries({ queryKey: ['coordinated-events'] });
+    },
+  });
+}
+
+export function useTogglePublishEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (eventId) => {
+      const { data } = await api.patch(`/events/${eventId}/publish`);
+      return data;
+    },
+    onSuccess: (data, eventId) => {
+      const newPublished = data?.isPublished;
+      queryClient.setQueryData(['events', eventId], (old) =>
+        old ? { ...old, isPublished: newPublished } : old
+      );
+      queryClient.setQueryData(['my-events'], (old) => {
+        if (!old || !Array.isArray(old)) return old;
+        return old.map((ev) =>
+          ev.id === eventId ? { ...ev, isPublished: newPublished } : ev
+        );
+      });
+    },
+  });
+}
+
+export function useAddCoordinator(eventId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (email) => {
+      const { data } = await api.post(`/events/${eventId}/coordinator`, {
+        email,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['coordinated-events'] });
+    },
+  });
+}
+
+export function useUploadPoster() {
+  return useMutation({
+    mutationFn: async (formData) => {
+      const { data } = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    },
+  });
+}
+
+export function useRegisterForEvent(eventId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload = {}) => {
+      const { data } = await api.post('/registrations', {
+        eventId,
+        ...payload,
+      });
+      return data;
+    },
+    onSuccess: (newRegistration) => {
+      // Optimistically update cache so UI shows "Registered" immediately
+      queryClient.setQueryData(['my-registrations'], (old) => {
+        const list = old || [];
+        if (list.some((r) => r.id === newRegistration?.id)) return old;
+        const reg = {
+          ...newRegistration,
+          eventId: newRegistration?.eventId ?? eventId,
+        };
+        return [...list, reg];
+      });
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
     },
   });
 }
@@ -128,7 +210,37 @@ export function useCancelRegistration() {
       const { data } = await api.delete(`/registrations/${registrationId}`);
       return data;
     },
+    onSuccess: (_, registrationId, context) => {
+      // Optimistically remove from cache so UI updates immediately
+      queryClient.setQueryData(['my-registrations'], (old) =>
+        (old || []).filter((r) => r.id !== registrationId)
+      );
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] });
+      if (context?.eventId) {
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({
+          queryKey: ['events', context.eventId],
+        });
+      }
+    },
+  });
+}
+
+export function useAddManualRegistration(eventId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data) => {
+      const { data: res } = await api.post('/registrations/manual', {
+        eventId,
+        ...data,
+      });
+      return res;
+    },
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['event-registrations', eventId],
+      });
       queryClient.invalidateQueries({ queryKey: ['my-registrations'] });
     },
   });

@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Calendar,
@@ -41,9 +40,12 @@ const TableRowSkeleton = () => (
   </tr>
 );
 import { Button } from '@/components/ui/button';
-import api from '@/lib/api';
 import { toast } from 'sonner';
-import { useMyEvents, useDeleteEvent } from '@/hooks/useEvents';
+import {
+  useMyEvents,
+  useDeleteEvent,
+  useTogglePublishEvent,
+} from '@/hooks/useEvents';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import CreateEventModal from '@/components/events/CreateEventModal';
 import { cn } from '@/lib/utils';
@@ -73,9 +75,9 @@ const PUBLISH_BTN_CLASSES = {
 
 export default function FacultyDashboard() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { data: events = [], isLoading, error, refetch } = useMyEvents();
   const deleteEventMutation = useDeleteEvent();
+  const togglePublishMutation = useTogglePublishEvent();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState({
@@ -83,50 +85,42 @@ export default function FacultyDashboard() {
     eventId: null,
     eventName: '',
   });
-  const [togglingEventId, setTogglingEventId] = useState(null);
 
   const handleDeleteClick = useCallback((e, eventId, eventName) => {
     e.stopPropagation();
     setDeleteConfirm({ open: true, eventId, eventName });
   }, []);
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(async () => {
     const { eventId } = deleteConfirm;
     if (!eventId) return;
-    deleteEventMutation.mutate(eventId, {
-      onSuccess: () => {
-        toast.success('Event deleted successfully');
-        setDeleteConfirm({ open: false, eventId: null, eventName: '' });
-      },
-      onError: (err) => {
-        toast.error(err.response?.data?.message || 'Failed to delete event');
-      },
-    });
+    try {
+      await deleteEventMutation.mutateAsync(eventId);
+      toast.success('Event deleted successfully');
+      setDeleteConfirm({ open: false, eventId: null, eventName: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete event');
+      throw err; // Re-throw so ConfirmDialog stays open
+    }
   }, [deleteConfirm, deleteEventMutation]);
 
   const handleTogglePublish = useCallback(
-    async (e, eventId) => {
+    (e, eventId) => {
       e.stopPropagation();
-      setTogglingEventId(eventId);
-      try {
-        const response = await api.patch(`/events/${eventId}/publish`);
-        const newPublished = response.data.isPublished;
-        queryClient.setQueryData(['my-events'], (old) => {
-          if (!old || !Array.isArray(old)) return old;
-          return old.map((ev) =>
-            ev.id === eventId ? { ...ev, isPublished: newPublished } : ev
+      togglePublishMutation.mutate(eventId, {
+        onSuccess: (data) => {
+          toast.success(
+            data?.isPublished ? 'Event published' : 'Event unpublished'
           );
-        });
-        toast.success(newPublished ? 'Event published' : 'Event unpublished');
-      } catch (err) {
-        toast.error(
-          err.response?.data?.message || 'Failed to update publish status'
-        );
-      } finally {
-        setTogglingEventId(null);
-      }
+        },
+        onError: (err) => {
+          toast.error(
+            err.response?.data?.message || 'Failed to update publish status'
+          );
+        },
+      });
     },
-    [queryClient]
+    [togglePublishMutation]
   );
 
   const errorMessage = error
@@ -316,7 +310,10 @@ export default function FacultyDashboard() {
                           </button>
                           <button
                             onClick={(e) => handleTogglePublish(e, event.id)}
-                            disabled={togglingEventId === event.id}
+                            disabled={
+                              togglePublishMutation.isPending &&
+                              togglePublishMutation.variables === event.id
+                            }
                             className={cn(
                               'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold font-mono uppercase transition-all disabled:opacity-70 disabled:cursor-wait',
                               event.isPublished
@@ -325,14 +322,16 @@ export default function FacultyDashboard() {
                             )}
                             title='Click to toggle status'
                           >
-                            {togglingEventId === event.id ? (
+                            {togglePublishMutation.isPending &&
+                            togglePublishMutation.variables === event.id ? (
                               <Loader2 className='h-3 w-3 animate-spin' />
                             ) : event.isPublished ? (
                               <Eye className='h-3 w-3' />
                             ) : (
                               <EyeOff className='h-3 w-3' />
                             )}
-                            {togglingEventId === event.id
+                            {togglePublishMutation.isPending &&
+                            togglePublishMutation.variables === event.id
                               ? 'Updating...'
                               : event.isPublished
                               ? 'Published'
@@ -412,7 +411,10 @@ export default function FacultyDashboard() {
                     </button>
                     <button
                       onClick={(e) => handleTogglePublish(e, event.id)}
-                      disabled={togglingEventId === event.id}
+                      disabled={
+                        togglePublishMutation.isPending &&
+                        togglePublishMutation.variables === event.id
+                      }
                       className={cn(
                         'flex-1 inline-flex justify-center items-center gap-2 p-2 rounded-lg text-sm border transition-colors disabled:opacity-70 disabled:cursor-wait',
                         event.isPublished
@@ -420,14 +422,16 @@ export default function FacultyDashboard() {
                           : PUBLISH_BTN_CLASSES.draft
                       )}
                     >
-                      {togglingEventId === event.id ? (
+                      {togglePublishMutation.isPending &&
+                      togglePublishMutation.variables === event.id ? (
                         <Loader2 className='h-4 w-4 animate-spin' />
                       ) : event.isPublished ? (
                         <Eye className='h-4 w-4' />
                       ) : (
                         <EyeOff className='h-4 w-4' />
                       )}
-                      {togglingEventId === event.id
+                      {togglePublishMutation.isPending &&
+                      togglePublishMutation.variables === event.id
                         ? 'Updating...'
                         : event.isPublished
                         ? 'Published'
