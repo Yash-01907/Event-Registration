@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import Landing from "@/pages/Landing";
@@ -120,6 +121,7 @@ function App() {
           </main>
           <Footer />
           <Toaster richColors position="top-right" theme="dark" />
+          <Analytics />
         </div>
       </Router>
     </QueryClientProvider>
