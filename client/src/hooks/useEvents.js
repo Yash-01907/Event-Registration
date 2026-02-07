@@ -23,6 +23,18 @@ export function useEvent(id) {
   });
 }
 
+/** Registrations for a specific event (event detail page, coordinators view). */
+export function useEventRegistrations(id) {
+  return useQuery({
+    queryKey: ['event-registrations', id],
+    queryFn: async () => {
+      const { data } = await api.get(`/registrations/event/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
 /** My registrations - used to show "Registered" on event cards. Only runs when user is logged in. */
 export function useMyRegistrations() {
   const user = useAuthStore((s) => s.user);
@@ -43,6 +55,19 @@ export function useMyEvents() {
     queryKey: ['my-events'],
     queryFn: async () => {
       const { data } = await api.get('/events/my-events');
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
+/** Coordinated events - events assigned to the current user as coordinator. Only runs when user is logged in. */
+export function useCoordinatedEvents() {
+  const user = useAuthStore((s) => s.user);
+  return useQuery({
+    queryKey: ['coordinated-events'],
+    queryFn: async () => {
+      const { data } = await api.get('/events/coordinated-events');
       return data;
     },
     enabled: !!user,
