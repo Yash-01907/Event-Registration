@@ -1,98 +1,199 @@
 # Event Registration System
 
-A full-stack web application designed for educational institutions to streamline the process of event management and student registration. This system allows faculty members to organize events and students to participate seamlessly.
+A full-stack web application for educational institutions to manage events and student registrations. Faculty create and manage events, coordinators handle registrations, and students browse and register for published events.
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Client (Frontend)
 
-- **Framework:** React 19 (Vite)
-- **Styling:** TailwindCSS 4
-- **State Management:** Zustand
-- **Data Fetching:** TanStack Query (React Query)
-- **Forms:** React Hook Form + Zod Validation
-- **UI Components:** Radix UI, Lucide React
+| Category      | Technology                              |
+| ------------- | --------------------------------------- |
+| Framework     | React 19 (Vite 7)                       |
+| Styling       | Tailwind CSS 4                          |
+| State         | Zustand                                 |
+| Data Fetching | TanStack Query (React Query)            |
+| Forms         | React Hook Form + Zod                   |
+| UI            | Radix UI, Lucide React, Sonner (toasts) |
+| HTTP          | Axios                                   |
 
 ### Server (Backend)
 
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** PostgreSQL (via Prisma ORM)
-- **Authentication:** JSON Web Tokens (JWT) with HTTP-only cookies
-- **File Uploads:** Cloudinary + Multer
+| Category   | Technology                 |
+| ---------- | -------------------------- |
+| Runtime    | Node.js                    |
+| Framework  | Express 5                  |
+| Database   | PostgreSQL (Prisma ORM)    |
+| Auth       | JWT (HTTP-only cookies)    |
+| Validation | express-validator          |
+| Uploads    | Cloudinary + Multer        |
+| Security   | Helmet, express-rate-limit |
 
-## ✅ Work Done (Features Implemented)
+## Features
+
+### Roles
+
+- **FACULTY** – Create and manage events, assign coordinators
+- **STUDENT** – Register for events, view My Tickets
+- **ADMIN** – Full access (Faculty + Student features)
 
 ### Authentication & Authorization
 
-- **User Roles:** Supports `FACULTY` and `STUDENT` roles.
-- **Secure Auth:** Bcrypt password hashing and JWT-based session management.
-- **Protected Routes:** Role-based access control for dashboards and management pages.
+- Register (STUDENT or FACULTY)
+- Login / Logout (JWT with HTTP-only cookies)
+- Protected routes with role-based access
+- Profile update (name, email, phone, roll number, branch, semester)
+- Change password
 
 ### Event Management (Faculty)
 
-- **Create & Edit:** Faculty can create events with details like categories, posters, dates, and fees.
-- **Publish Workflow:** Events can be drafted and published when ready.
-- **Coordinator Management:** Faculty can assign other users (students or faculty) as coordinators for specific events.
-- **Dashboard:** Dedicated view to manage created events.
+- Create events with categories (TECH, CULTURAL, SPORTS), posters, dates, fees
+- Draft → Publish workflow
+- Edit and delete events
+- Assign main coordinator + additional coordinators
+- **Team events** – min/max team size, team name and members
+- **Custom form config** – dynamic fields per event
+- **Semester control** – restrict events to students up to a certain semester
 
-### Registration System
+### Registration
 
-- **Online Registration:** Students can browse and register for published events.
-- **Manual Entry:** Coordinators and Faculty can manually register participants (e.g., for on-spot registrations).
-- **Ticket Management:** Students can view their registered events ("My Tickets").
-- **Participant Lists:** Coordinators can view real-time registration lists for their events.
+- **Online** – Students register for published events
+- **Manual entry** – Coordinators/faculty add participants (e.g. on-spot)
+- Cancel registration
+- Participant lists with real-time updates
 
-### UI/UX
+### Dashboards
 
-- **Responsive Design:** Mobile-first approach using TailwindCSS.
-- **Interactive UI:** Modals for forms, toast notifications (Sonner), and loaders.
-- **Landing Page:** Engaging home page to showcase current events.
+- **Faculty Dashboard** – My events, create/edit/delete, publish
+- **Coordinator Dashboard** – Events assigned as coordinator
+- **Student Dashboard (My Tickets)** – Registered events
+- **ManageEvent** – Event details, coordinators, registrations, manual entry
 
-## 📂 Project Structure
+## Project Structure
 
 ```
-root/
-├── client/                 # React Frontend
+Event-Registration/
+├── client/                    # React frontend
 │   ├── src/
-│   │   ├── components/     # UI & Feature components
-│   │   ├── hooks/          # Custom hooks (useEvents, useDebounce)
-│   │   ├── pages/          # Route pages (Auth, Dashboard, Landing)
-│   │   ├── store/          # Global state (authStore)
-│   │   └── lib/            # Utilities & API configuration
-│   └── ...
-├── server/                 # Express Backend
-│   ├── prisma/             # Database schema & migrations
-│   ├── src/
-│   │   ├── controllers/    # Request handlers
-│   │   ├── middleware/     # Auth & Validation middleware
-│   │   ├── routes/         # API endpoints
-│   │   ├── utils/          # Helper functions
-│   └── ...
+│   │   ├── components/
+│   │   │   ├── dashboard/     # ManualEntryModal
+│   │   │   ├── events/       # CreateEventModal, EventCard, EventRegistrationModal
+│   │   │   ├── shared/       # Navbar, Footer, ScrollToTop
+│   │   │   └── ui/           # Button, Card, ConfirmDialog, Dialog, Input, etc.
+│   │   ├── hooks/            # useEvents, useDebounce
+│   │   ├── lib/              # api, utils
+│   │   ├── pages/
+│   │   │   ├── Auth/         # Login, Register
+│   │   │   ├── Dashboard/    # FacultyDashboard, CoordinatorDashboard, StudentDashboard,
+│   │   │   │                 # ManageEvent, EventRegistrations
+│   │   │   ├── EventDetails.jsx
+│   │   │   ├── Events.jsx
+│   │   │   ├── Landing.jsx
+│   │   │   └── Profile.jsx
+│   │   └── store/            # authStore
+│   └── vercel.json
+├── server/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   └── schema.prisma
+│   └── src/
+│       ├── config/           # db, env
+│       ├── controllers/      # authController, eventController, registrationController
+│       ├── middleware/       # auth, error, rateLimit, validation
+│       ├── routes/           # auth, event, registration, upload
+│       ├── utils/            # generateToken
+│       └── server.js
 └── README.md
 ```
 
-## 🔮 Future Steps & Roadmap
+## Getting Started
 
-- [ ] **Email Notifications:** automated emails for registration confirmation and event updates.
-- [ ] **Admin Panel:** A Super-Admin role to oversee all users and system settings.
-- [ ] **Analytics & Reporting:** Visual charts for registration trends and revenue.
-- [ ] **Feedback System:** Allow students to rate and review past events.
-- [ ] **Profile Management:** Allow users to update their profile details and avatars.
+### Prerequisites
 
-## 🛠️ Getting Started
+- Node.js (v18+)
+- PostgreSQL
+- Cloudinary account (for poster uploads)
 
-1.  **Clone the repository.**
-2.  **Setup Server:**
-    ```bash
-    cd server
-    npm install
-    npx prisma migrate dev
-    npm run dev
-    ```
-3.  **Setup Client:**
-    ```bash
-    cd client
-    npm install
-    npm run dev
-    ```
+### 1. Clone the repository
+
+```bash
+git clone <repo-url>
+cd Event-Registration
+```
+
+### 2. Server setup
+
+```bash
+cd server
+npm install
+```
+
+Create `.env` in `server/` with:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/event_registration?schema=public"
+DIRECT_URL="postgresql://user:password@localhost:5432/event_registration"
+JWT_SECRET="your-secret-key"
+JWT_EXPIRES_IN="7d"
+CORS_ORIGIN="http://localhost:5173"
+PORT=5000
+
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+```
+
+Run migrations and start the server:
+
+```bash
+npx prisma migrate dev
+npm run dev
+```
+
+### 3. Client setup
+
+```bash
+cd client
+npm install
+```
+
+Create `.env` in `client/`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Start the dev server:
+
+```bash
+npm run dev
+```
+
+The app runs at `http://localhost:5173` (or the port Vite assigns).
+
+## Environment Variables
+
+### Server (`server/.env`)
+
+| Variable       | Required | Description                                  |
+| -------------- | -------- | -------------------------------------------- |
+| DATABASE_URL   | Yes      | PostgreSQL connection string (pooled)        |
+| DIRECT_URL     | Yes      | Direct connection for Prisma migrations      |
+| JWT_SECRET     | Yes      | Secret for signing JWTs                      |
+| JWT_EXPIRES_IN | Yes      | Token expiry (e.g. `7d`)                     |
+| CORS_ORIGIN    | Yes      | Client origin (e.g. `http://localhost:5173`) |
+| PORT           | No       | Server port (default: 5000)                  |
+| CLOUDINARY\_\* | Yes      | Cloudinary credentials for poster uploads    |
+
+### Client (`client/.env`)
+
+| Variable     | Required | Description                                     |
+| ------------ | -------- | ----------------------------------------------- |
+| VITE_API_URL | Yes      | API base URL (e.g. `http://localhost:5000/api`) |
+
+## Roadmap
+
+- [ ] Email notifications (registration confirmation, event updates)
+- [ ] Admin panel (user management, system settings)
+- [ ] Analytics and reporting (charts, trends)
+- [ ] Feedback/ratings for past events
+- [ ] Profile avatars
