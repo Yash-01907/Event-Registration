@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Calendar,
   MapPin,
   Loader2,
   Users,
-  Cpu,
   Settings,
   Eye,
   EyeOff,
@@ -18,7 +18,31 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import CreateEventModal from '@/components/events/CreateEventModal';
 import { cn } from '@/lib/utils';
 
+const getCategoryColor = (category) => {
+  switch (category) {
+    case 'TECH':
+      return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
+    case 'CULTURAL':
+      return 'text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10';
+    case 'SPORTS':
+      return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
+    default:
+      return 'text-gray-400 border-gray-500/30 bg-gray-500/10';
+  }
+};
+
+const formatEventDate = (date) =>
+  date ? new Date(date).toLocaleDateString() : 'TBA';
+
+const PUBLISH_BTN_CLASSES = {
+  published:
+    'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20',
+  draft:
+    'bg-yellow-500/10 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/20',
+};
+
 export default function FacultyDashboard() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,13 +53,14 @@ export default function FacultyDashboard() {
     eventName: '',
   });
   const [deleting, setDeleting] = useState(false);
+  const [togglingEventId, setTogglingEventId] = useState(null);
 
-  const handleDeleteClick = (e, eventId, eventName) => {
+  const handleDeleteClick = useCallback((e, eventId, eventName) => {
     e.stopPropagation();
     setDeleteConfirm({ open: true, eventId, eventName });
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     const { eventId } = deleteConfirm;
     setDeleting(true);
     try {
@@ -47,24 +72,31 @@ export default function FacultyDashboard() {
     } finally {
       setDeleting(false);
     }
-  };
+  }, [deleteConfirm]);
 
-  const handleTogglePublish = async (eventId, currentStatus) => {
+  const handleTogglePublish = useCallback(async (e, eventId) => {
+    e.stopPropagation();
+    setTogglingEventId(eventId);
     try {
       const response = await api.patch(`/events/${eventId}/publish`);
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
+      setEvents((prev) =>
+        prev.map((event) =>
           event.id === eventId
             ? { ...event, isPublished: response.data.isPublished }
             : event
         )
       );
+      toast.success(
+        response.data.isPublished ? 'Event published' : 'Event unpublished'
+      );
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.message || 'Failed to update publish status'
       );
+    } finally {
+      setTogglingEventId(null);
     }
-  };
+  }, []);
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
@@ -83,18 +115,10 @@ export default function FacultyDashboard() {
     fetchEvents();
   }, [fetchEvents]);
 
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case 'TECH':
-        return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
-      case 'CULTURAL':
-        return 'text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10';
-      case 'SPORTS':
-        return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
-      default:
-        return 'text-gray-400 border-gray-500/30 bg-gray-500/10';
-    }
-  };
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
+  const handleDeleteDialogChange = useCallback((open) => {
+    setDeleteConfirm((prev) => ({ ...prev, open }));
+  }, []);
 
   return (
     <div className='min-h-screen gradient-mesh pt-20 pb-12'>
@@ -173,9 +197,7 @@ export default function FacultyDashboard() {
                     <tr
                       key={event.id}
                       className='hover:bg-white/5 transition-colors cursor-pointer group'
-                      onClick={() =>
-                        (window.location.href = `/dashboard/event/${event.id}`)
-                      }
+                      onClick={() => navigate(`/dashboard/event/${event.id}`)}
                     >
                       <td className='px-6 py-4'>
                         <div className='font-medium text-white group-hover:text-cyan-400 transition-colors'>
@@ -196,9 +218,7 @@ export default function FacultyDashboard() {
                         </span>
                       </td>
                       <td className='px-6 py-4 text-sm text-gray-400 font-mono'>
-                        {event.date
-                          ? new Date(event.date).toLocaleDateString()
-                          : 'TBA'}
+                        {formatEventDate(event.date)}
                       </td>
                       <td className='px-6 py-4 text-sm text-gray-400 font-mono'>
                         <div className='flex items-center gap-1.5'>
@@ -214,7 +234,9 @@ export default function FacultyDashboard() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.location.href = `/dashboard/event/${event.id}/registrations`;
+                              navigate(
+                                `/dashboard/event/${event.id}/registrations`
+                              );
                             }}
                             className='p-2 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors'
                             title='View Registrations'
@@ -231,29 +253,28 @@ export default function FacultyDashboard() {
                             <Trash2 className='h-4 w-4' />
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleTogglePublish(event.id, event.isPublished);
-                            }}
+                            onClick={(e) => handleTogglePublish(e, event.id)}
+                            disabled={togglingEventId === event.id}
                             className={cn(
-                              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold font-mono uppercase transition-all',
+                              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold font-mono uppercase transition-all disabled:opacity-70 disabled:cursor-wait',
                               event.isPublished
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                                : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20'
+                                ? PUBLISH_BTN_CLASSES.published
+                                : PUBLISH_BTN_CLASSES.draft
                             )}
                             title='Click to toggle status'
                           >
-                            {event.isPublished ? (
-                              <>
-                                <Eye className='h-3 w-3' />
-                                Published
-                              </>
+                            {togglingEventId === event.id ? (
+                              <Loader2 className='h-3 w-3 animate-spin' />
+                            ) : event.isPublished ? (
+                              <Eye className='h-3 w-3' />
                             ) : (
-                              <>
-                                <EyeOff className='h-3 w-3' />
-                                Draft
-                              </>
+                              <EyeOff className='h-3 w-3' />
                             )}
+                            {togglingEventId === event.id
+                              ? 'Updating...'
+                              : event.isPublished
+                              ? 'Published'
+                              : 'Draft'}
                           </button>
                         </div>
                       </td>
@@ -269,9 +290,7 @@ export default function FacultyDashboard() {
                 <div
                   key={event.id}
                   className='bg-white/5 border border-white/10 rounded-xl p-4 space-y-4'
-                  onClick={() =>
-                    (window.location.href = `/dashboard/event/${event.id}`)
-                  }
+                  onClick={() => navigate(`/dashboard/event/${event.id}`)}
                 >
                   <div className='flex justify-between items-start'>
                     <div>
@@ -296,9 +315,7 @@ export default function FacultyDashboard() {
                     <div className='flex justify-between'>
                       <span className='flex items-center gap-2'>
                         <Calendar className='h-3.5 w-3.5 text-cyan-400' />
-                        {event.date
-                          ? new Date(event.date).toLocaleDateString()
-                          : 'TBA'}
+                        {formatEventDate(event.date)}
                       </span>
                       <span className='font-mono'>
                         {event.fees > 0 ? `₹${event.fees}` : 'Free'}
@@ -314,7 +331,7 @@ export default function FacultyDashboard() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = `/dashboard/event/${event.id}/registrations`;
+                        navigate(`/dashboard/event/${event.id}/registrations`);
                       }}
                       className='flex-1 inline-flex justify-center items-center gap-2 p-2 rounded-lg text-sm bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors'
                     >
@@ -332,28 +349,27 @@ export default function FacultyDashboard() {
                       <Trash2 className='h-4 w-4' />
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTogglePublish(event.id, event.isPublished);
-                      }}
+                      onClick={(e) => handleTogglePublish(e, event.id)}
+                      disabled={togglingEventId === event.id}
                       className={cn(
-                        'flex-1 inline-flex justify-center items-center gap-2 p-2 rounded-lg text-sm border transition-colors',
+                        'flex-1 inline-flex justify-center items-center gap-2 p-2 rounded-lg text-sm border transition-colors disabled:opacity-70 disabled:cursor-wait',
                         event.isPublished
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-                          : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/20'
+                          ? PUBLISH_BTN_CLASSES.published
+                          : PUBLISH_BTN_CLASSES.draft
                       )}
                     >
-                      {event.isPublished ? (
-                        <>
-                          <Eye className='h-4 w-4' />
-                          Published
-                        </>
+                      {togglingEventId === event.id ? (
+                        <Loader2 className='h-4 w-4 animate-spin' />
+                      ) : event.isPublished ? (
+                        <Eye className='h-4 w-4' />
                       ) : (
-                        <>
-                          <EyeOff className='h-4 w-4' />
-                          Draft
-                        </>
+                        <EyeOff className='h-4 w-4' />
                       )}
+                      {togglingEventId === event.id
+                        ? 'Updating...'
+                        : event.isPublished
+                        ? 'Published'
+                        : 'Draft'}
                     </button>
                   </div>
                 </div>
@@ -364,15 +380,13 @@ export default function FacultyDashboard() {
 
         <CreateEventModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeModal}
           onEventCreated={fetchEvents}
         />
 
         <ConfirmDialog
           open={deleteConfirm.open}
-          onOpenChange={(open) =>
-            setDeleteConfirm((prev) => ({ ...prev, open }))
-          }
+          onOpenChange={handleDeleteDialogChange}
           title='Delete Event'
           description={`Are you sure you want to delete "${deleteConfirm.eventName}"? This will remove all registrations and cannot be undone.`}
           confirmLabel='Delete'
