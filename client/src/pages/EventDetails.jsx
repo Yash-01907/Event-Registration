@@ -122,6 +122,39 @@ export default function EventDetails() {
     setDeregisterConfirmOpen(true);
   };
 
+  const handleShare = async () => {
+    if (!event) return;
+    const url = `${window.location.origin}/events/${event.id}`;
+    const title = event.name;
+    const text = event.description
+      ? `${event.name} – ${event.description.slice(0, 120)}${
+          event.description.length > 120 ? '...' : ''
+        }`
+      : `Check out ${event.name} at UDAAN 2026`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title,
+          text,
+          url,
+        });
+        toast.success('Event shared!');
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard');
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard');
+      } catch {
+        toast.error('Could not share or copy link');
+      }
+    }
+  };
+
   const handleConfirmDeregister = async () => {
     if (!myRegistration?.id) return;
     setDeregistering(true);
@@ -384,6 +417,7 @@ export default function EventDetails() {
                 <Button
                   variant='ghost'
                   className='text-gray-500 hover:text-cyan-400'
+                  onClick={handleShare}
                 >
                   <Share2 className='mr-2 h-4 w-4' />
                   Share Event
