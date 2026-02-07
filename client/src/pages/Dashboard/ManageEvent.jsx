@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import {
   ArrowLeft,
-  Save,
   MapPin,
   Calendar,
   IndianRupee,
@@ -13,11 +12,13 @@ import {
   Loader2,
   Trash,
   X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import api from "@/lib/api";
-import { cn } from "@/lib/utils";
-import useAuthStore from "@/store/authStore";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import api from '@/lib/api';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { cn } from '@/lib/utils';
+import useAuthStore from '@/store/authStore';
 
 export default function ManageEvent() {
   const { id } = useParams();
@@ -29,11 +30,11 @@ export default function ManageEvent() {
   const [addingCoord, setAddingCoord] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [coordEmail, setCoordEmail] = useState("");
+  const [coordEmail, setCoordEmail] = useState('');
   const [questions, setQuestions] = useState([]);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  // ... (rest of hook calls)
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const {
     register,
@@ -43,45 +44,34 @@ export default function ManageEvent() {
     formState: { errors },
   } = useForm();
 
-  const isTeamEvent = watch("isTeamEvent");
-
-  // ... fetchEvent ...
+  const isTeamEvent = watch('isTeamEvent');
 
   const fetchEvent = useCallback(async () => {
-    // ... implementation
     try {
       const response = await api.get(`/events/${id}`);
-      setEvent(response.data);
       // Populate form
-      setValue("name", response.data.name);
-      setValue("category", response.data.category);
-      if (response.data.posterUrl) {
-        setPreviewUrl(response.data.posterUrl);
-        setValue("posterUrl", response.data.posterUrl);
+      const data = response.data;
+      setEvent(data);
+      setValue('name', data.name);
+      setValue('category', data.category);
+      if (data.posterUrl) {
+        setPreviewUrl(data.posterUrl);
+        setValue('posterUrl', data.posterUrl);
       }
-      if (response.data.date) {
-        // Format for datetime-local: YYYY-MM-DDTHH:mm
-        const dateObj = new Date(response.data.date);
-        const formattedDate = dateObj.toISOString().slice(0, 16);
-        setValue("date", formattedDate);
+      if (data.date) {
+        setValue('date', new Date(data.date).toISOString().slice(0, 16));
       }
-      setValue("fees", response.data.fees);
-      setValue("location", response.data.location);
-      setValue("description", response.data.description);
-      setValue("isTeamEvent", response.data.isTeamEvent);
-      setValue("minTeamSize", response.data.minTeamSize);
-      setValue("maxTeamSize", response.data.maxTeamSize);
-      // For formConfig, we might need a local state if we want a complex builder,
-      // but for now let's use a simple JSON editor concept or helper state.
-      // Let's rely on a separate state for questions to manage 'Add/Remove' easily
-      if (response.data.formConfig) {
-        setQuestions(response.data.formConfig);
-      }
+      setValue('fees', data.fees);
+      setValue('location', data.location);
+      setValue('description', data.description);
+      setValue('isTeamEvent', data.isTeamEvent);
+      setValue('minTeamSize', data.minTeamSize);
+      setValue('maxTeamSize', data.maxTeamSize);
+      if (data.formConfig) setQuestions(data.formConfig);
       setLoading(false);
     } catch (error) {
-      // ... error handling
-      console.error("Failed to fetch event", error);
-      setMessage({ type: "error", text: "Failed to load event details" });
+      console.error('Failed to fetch event', error);
+      setMessage({ type: 'error', text: 'Failed to load event details' });
       setLoading(false);
     }
   }, [id, setValue]);
@@ -90,140 +80,224 @@ export default function ManageEvent() {
     fetchEvent();
   }, [fetchEvent]);
 
-  const onUpdateEvent = async (data) => {
-    // ... implementation
-    setSaving(true);
-    setMessage({ type: "", text: "" });
-    try {
-      await api.put(`/events/${id}`, { ...data, formConfig: questions });
-      setMessage({ type: "success", text: "Event updated successfully" });
-      fetchEvent(); // Refresh data
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text: error.response?.data?.message || "Failed to update event",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const onUpdateEvent = useCallback(
+    async (data) => {
+      setSaving(true);
+      setMessage({ type: '', text: '' });
+      try {
+        await api.put(`/events/${id}`, { ...data, formConfig: questions });
+        setMessage({ type: 'success', text: 'Event updated successfully' });
+        fetchEvent();
+      } catch (error) {
+        setMessage({
+          type: 'error',
+          text: error.response?.data?.message || 'Failed to update event',
+        });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [id, questions, fetchEvent]
+  );
 
   const isMainCoordinator = user?.id === event?.mainCoordinatorId;
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === 'ADMIN';
   const canAddCoordinator = isMainCoordinator || isAdmin;
 
-  const onTogglePublish = async () => {
+  const onDeleteEvent = useCallback(async () => {
+    setDeleting(true);
+    setMessage({ type: '', text: '' });
+    try {
+      await api.delete(`/events/${id}`);
+      toast.success('Event deleted successfully');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete event');
+    } finally {
+      setDeleting(false);
+    }
+  }, [id, navigate]);
+
+  const onTogglePublish = useCallback(async () => {
     try {
       setSaving(true);
       const res = await api.patch(`/events/${id}/publish`);
       setEvent((prev) => ({ ...prev, isPublished: res.data.isPublished }));
       setMessage({
-        type: "success",
-        text: `Event ${res.data.isPublished ? "Published" : "Unpublished"} successfully`,
+        type: 'success',
+        text: `Event ${
+          res.data.isPublished ? 'Published' : 'Unpublished'
+        } successfully`,
       });
     } catch (error) {
-      console.error("Failed to toggle publish status", error);
+      console.error('Failed to toggle publish status', error);
       setMessage({
-        type: "error",
-        text: error.response?.data?.message || "Failed to update status",
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to update status',
       });
     } finally {
       setSaving(false);
     }
-  };
+  }, [id]);
 
-  const onAddCoordinator = async (e) => {
-    e.preventDefault();
-    if (!coordEmail) return;
+  const onAddCoordinator = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!coordEmail) return;
 
-    if (user && coordEmail === user.email) {
-      setMessage({
-        type: "error",
-        text: "You cannot add yourself as a coordinator",
-      });
-      return;
-    }
+      if (user && coordEmail === user.email) {
+        setMessage({
+          type: 'error',
+          text: 'You cannot add yourself as a coordinator',
+        });
+        return;
+      }
 
-    setAddingCoord(true);
-    setMessage({ type: "", text: "" });
-    try {
-      await api.post(`/events/${id}/coordinator`, { email: coordEmail });
-      setCoordEmail("");
-      setMessage({ type: "success", text: "Coordinator added successfully" });
-      fetchEvent(); // Refresh list
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text: error.response?.data?.message || "Failed to add coordinator",
-      });
-    } finally {
-      setAddingCoord(false);
-    }
-  };
+      setAddingCoord(true);
+      setMessage({ type: '', text: '' });
+      try {
+        await api.post(`/events/${id}/coordinator`, { email: coordEmail });
+        setCoordEmail('');
+        setMessage({ type: 'success', text: 'Coordinator added successfully' });
+        fetchEvent();
+      } catch (error) {
+        setMessage({
+          type: 'error',
+          text: error.response?.data?.message || 'Failed to add coordinator',
+        });
+      } finally {
+        setAddingCoord(false);
+      }
+    },
+    [id, coordEmail, user, fetchEvent]
+  );
+
+  const handlePosterUpload = useCallback(
+    async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (res.data?.url) {
+          setValue('posterUrl', res.data.url);
+          setPreviewUrl(res.data.url);
+        }
+      } catch (error) {
+        console.error('Upload failed', error);
+        setMessage({ type: 'error', text: 'Failed to upload image' });
+      } finally {
+        setUploading(false);
+      }
+    },
+    [setValue]
+  );
+
+  const addQuestion = useCallback(() => {
+    setQuestions((prev) => [
+      ...prev,
+      { label: '', type: 'text', required: false },
+    ]);
+  }, []);
+
+  const updateQuestion = useCallback((index, field, value) => {
+    setQuestions((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  }, []);
+
+  const removeQuestion = useCallback((index) => {
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   if (loading)
     return (
-      <div className="flex justify-center pt-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className='flex justify-center pt-20'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     );
-  if (!event) return <div className="text-center pt-20">Event not found</div>;
+  if (!event) return <div className='text-center pt-20'>Event not found</div>;
 
   return (
-    <div className="min-h-screen gradient-mesh pt-20 pb-12">
-      <div className="absolute inset-0 grid-pattern opacity-30 pointer-events-none" />
+    <div className='min-h-screen gradient-mesh pt-20 pb-12'>
+      <div className='absolute inset-0 grid-pattern opacity-30 pointer-events-none' />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className='container mx-auto px-4 relative z-10'>
+        <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
           <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="gap-2 text-muted-foreground hover:text-foreground"
+            variant='ghost'
+            onClick={() => navigate('/dashboard')}
+            className='gap-2 text-muted-foreground hover:text-foreground'
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+            <ArrowLeft className='h-4 w-4' /> Back to Dashboard
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/dashboard/event/${id}/registrations`)}
-            className="gap-2"
-          >
-            <Users className="h-4 w-4" /> View Registrations
-          </Button>
+          <div className='flex gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => navigate(`/dashboard/event/${id}/registrations`)}
+              className='gap-2'
+            >
+              <Users className='h-4 w-4' /> View Registrations
+            </Button>
+            {(isMainCoordinator || isAdmin) && (
+              <Button
+                variant='outline'
+                onClick={() => setDeleteConfirmOpen(true)}
+                disabled={deleting}
+                className='gap-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500'
+              >
+                {deleting ? (
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                ) : (
+                  <Trash className='h-4 w-4' />
+                )}
+                Delete Event
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
           {/* Left Column: Event Details */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold font-heading text-foreground">
+          <div className='lg:col-span-2 space-y-6'>
+            <div className='rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6'>
+              <div className='flex justify-between items-center mb-6'>
+                <h2 className='text-xl font-bold font-heading text-foreground'>
                   Edit Event Details
                 </h2>
                 <Button
                   onClick={onTogglePublish}
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   disabled={saving || uploading}
                   className={cn(
-                    "border-opacity-50",
+                    'border-opacity-50',
                     event.isPublished
-                      ? "bg-green-500/10 text-green-400 border-green-500 hover:bg-green-500/20 hover:text-green-300"
-                      : "bg-yellow-500/10 text-yellow-400 border-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-300",
+                      ? 'bg-green-500/10 text-green-400 border-green-500 hover:bg-green-500/20 hover:text-green-300'
+                      : 'bg-yellow-500/10 text-yellow-400 border-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-300'
                   )}
                 >
-                  {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                  {event.isPublished ? "Published" : "Draft"}
+                  {saving && <Loader2 className='mr-2 h-3 w-3 animate-spin' />}
+                  {event.isPublished ? 'Published' : 'Draft'}
                 </Button>
               </div>
 
               {message.text && (
                 <div
                   className={cn(
-                    "mb-4 p-3 rounded-md text-sm border",
-                    message.type === "error"
-                      ? "bg-destructive/10 border-destructive/20 text-destructive"
-                      : "bg-green-500/10 border-green-500/20 text-green-500",
+                    'mb-4 p-3 rounded-md text-sm border',
+                    message.type === 'error'
+                      ? 'bg-destructive/10 border-destructive/20 text-destructive'
+                      : 'bg-green-500/10 border-green-500/20 text-green-500'
                   )}
                 >
                   {message.text}
@@ -232,238 +306,211 @@ export default function ManageEvent() {
 
               <form
                 onSubmit={handleSubmit(onUpdateEvent)}
-                className="space-y-4"
+                className='space-y-4'
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className='text-sm font-medium text-muted-foreground'>
                       Event Name
                     </label>
                     <input
-                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                      {...register("name", { required: "Required" })}
+                      className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                      {...register('name', { required: 'Required' })}
                     />
                     {errors.name && (
-                      <p className="mt-1 text-xs text-destructive">
+                      <p className='mt-1 text-xs text-destructive'>
                         {errors.name.message}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className='text-sm font-medium text-muted-foreground'>
                       Category
                     </label>
                     <select
-                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                      {...register("category")}
+                      className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                      {...register('category')}
                     >
-                      <option value="TECH" className="bg-background">
+                      <option value='TECH' className='bg-background'>
                         Technical
                       </option>
-                      <option value="CULTURAL" className="bg-background">
+                      <option value='CULTURAL' className='bg-background'>
                         Cultural
                       </option>
-                      <option value="SPORTS" className="bg-background">
+                      <option value='SPORTS' className='bg-background'>
                         Sports
                       </option>
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className='text-sm font-medium text-muted-foreground'>
                       Date & Time
                     </label>
-                    <div className="relative mt-1">
-                      <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <div className='relative mt-1'>
+                      <Calendar className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                       <input
-                        type="datetime-local"
-                        className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        {...register("date")}
+                        type='datetime-local'
+                        className='block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                        {...register('date')}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className='text-sm font-medium text-muted-foreground'>
                       Fees (₹)
                     </label>
-                    <div className="relative mt-1">
-                      <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <div className='relative mt-1'>
+                      <IndianRupee className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                       <input
-                        type="number"
-                        className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        {...register("fees")}
+                        type='number'
+                        className='block w-full hover:cursor-pointer rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                        {...register('fees')}
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className='text-sm font-medium text-muted-foreground'>
                     Venue
                   </label>
-                  <div className="relative mt-1">
-                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <div className='relative mt-1'>
+                    <MapPin className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                     <input
-                      className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                      {...register("location")}
+                      className='block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                      {...register('location')}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  <label className='text-sm font-medium text-muted-foreground block mb-2'>
                     Event Poster
                   </label>
 
-                  <div className="flex items-start gap-4">
+                  <div className='flex items-start gap-4'>
                     {previewUrl ? (
-                      <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-700 group">
+                      <div className='relative h-20 w-20 rounded-lg overflow-hidden border border-gray-700 group'>
                         <img
                           src={previewUrl}
-                          alt="Preview"
-                          className="h-full w-full object-cover"
+                          alt='Preview'
+                          className='h-full w-full object-cover'
                         />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className='absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
                           <button
-                            type="button"
+                            type='button'
                             onClick={() => {
                               setPreviewUrl(null);
-                              setValue("posterUrl", "");
+                              setValue('posterUrl', '');
                             }}
-                            className="text-white hover:text-red-400"
+                            className='text-white hover:text-red-400'
                           >
-                            <X className="h-6 w-6" />
+                            <X className='h-6 w-6' />
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="h-20 w-20 rounded-lg border border-dashed border-gray-700 bg-gray-900 flex items-center justify-center text-gray-600">
-                        <span className="text-xs">No Image</span>
+                      <div className='h-20 w-20 rounded-lg border border-dashed border-gray-700 bg-gray-900 flex items-center justify-center text-gray-600'>
+                        <span className='text-xs'>No Image</span>
                       </div>
                     )}
 
-                    <div className="flex-1">
+                    <div className='flex-1'>
                       <input
-                        type="file"
-                        accept="image/*"
+                        type='file'
+                        accept='image/*'
                         disabled={uploading}
-                        className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          setUploading(true);
-                          const formData = new FormData();
-                          formData.append("file", file);
-
-                          try {
-                            const res = await api.post("/upload", formData, {
-                              headers: {
-                                "Content-Type": "multipart/form-data",
-                              },
-                            });
-                            if (res.data.url) {
-                              setValue("posterUrl", res.data.url);
-                              setPreviewUrl(res.data.url);
-                            }
-                          } catch (error) {
-                            console.error("Upload failed", error);
-                            setMessage({
-                              type: "error",
-                              text: "Failed to upload image",
-                            });
-                          } finally {
-                            setUploading(false);
-                          }
-                        }}
+                        className='block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                        onChange={handlePosterUpload}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className='text-xs text-muted-foreground mt-1'>
                         {uploading
-                          ? "Uploading..."
-                          : "Upload a poster image (JPG, PNG)"}
+                          ? 'Uploading...'
+                          : 'Upload a poster image (JPG, PNG)'}
                       </p>
                       {/* Hidden input to store URL */}
-                      <input type="hidden" {...register("posterUrl")} />
+                      <input type='hidden' {...register('posterUrl')} />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className='text-sm font-medium text-muted-foreground'>
                     Description
                   </label>
                   <textarea
-                    rows="4"
-                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    {...register("description")}
+                    rows='4'
+                    className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                    {...register('description')}
                   />
                 </div>
 
                 {/* Team Event Settings */}
-                <div className="p-4 rounded-lg bg-card border border-border space-y-4">
-                  <div className="flex items-center gap-2">
+                <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                  <div className='flex items-center gap-2'>
                     <input
-                      type="checkbox"
-                      id="edit-isTeamEvent"
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      {...register("isTeamEvent")}
+                      type='checkbox'
+                      id='edit-isTeamEvent'
+                      className='h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary'
+                      {...register('isTeamEvent')}
                     />
                     <label
-                      htmlFor="edit-isTeamEvent"
-                      className="text-sm font-medium text-foreground"
+                      htmlFor='edit-isTeamEvent'
+                      className='text-sm font-medium text-foreground'
                     >
                       This is a Team Event
                     </label>
                   </div>
 
                   {isTeamEvent && (
-                    <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div className='grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2'>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">
+                        <label className='text-sm font-medium text-muted-foreground'>
                           Min Team Size
                         </label>
                         <input
-                          type="number"
-                          min="1"
-                          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                          {...register("minTeamSize", {
+                          type='number'
+                          min='1'
+                          className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                          {...register('minTeamSize', {
                             required: isTeamEvent
-                              ? "Min team size is required"
+                              ? 'Min team size is required'
                               : false,
                             min: {
                               value: 1,
-                              message: "Min size must be at least 1",
+                              message: 'Min size must be at least 1',
                             },
                           })}
                         />
                         {errors.minTeamSize && (
-                          <p className="mt-1 text-xs text-destructive">
+                          <p className='mt-1 text-xs text-destructive'>
                             {errors.minTeamSize.message}
                           </p>
                         )}
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">
+                        <label className='text-sm font-medium text-muted-foreground'>
                           Max Team Size
                         </label>
                         <input
-                          type="number"
-                          min="1"
-                          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                          {...register("maxTeamSize", {
+                          type='number'
+                          min='1'
+                          className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                          {...register('maxTeamSize', {
                             required: isTeamEvent
-                              ? "Max team size is required"
+                              ? 'Max team size is required'
                               : false,
                             min: {
                               value: 1,
-                              message: "Max size must be at least 1",
+                              message: 'Max size must be at least 1',
                             },
                           })}
                         />
                         {errors.maxTeamSize && (
-                          <p className="mt-1 text-xs text-destructive">
+                          <p className='mt-1 text-xs text-destructive'>
                             {errors.maxTeamSize.message}
                           </p>
                         )}
@@ -473,53 +520,46 @@ export default function ManageEvent() {
                 </div>
 
                 {/* Custom Questions Builder */}
-                <div className="p-4 rounded-lg bg-card border border-border space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-foreground">
+                <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                  <div className='flex justify-between items-center'>
+                    <h3 className='text-sm font-medium text-foreground'>
                       Registration Questions
                     </h3>
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setQuestions([
-                          ...questions,
-                          { label: "", type: "text", required: false },
-                        ])
-                      }
-                      className="text-xs h-8"
+                      type='button'
+                      variant='outline'
+                      size='sm'
+                      onClick={addQuestion}
+                      className='text-xs h-8'
                     >
-                      <Plus className="h-3 w-3 mr-1" /> Add Question
+                      <Plus className='h-3 w-3 mr-1' /> Add Question
                     </Button>
                   </div>
 
                   {questions.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">
+                    <p className='text-xs text-muted-foreground italic'>
                       No custom questions added.
                     </p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className='space-y-3'>
                       {questions.map((q, index) => (
                         <div
                           key={index}
-                          className="flex gap-2 items-start p-3 bg-background/50 rounded-md border border-border"
+                          className='flex gap-2 items-start p-3 bg-background/50 rounded-md border border-border'
                         >
-                          <div className="flex-1 space-y-2">
+                          <div className='flex-1 space-y-2'>
                             <input
-                              placeholder="Question (e.g., GitHub Handle)"
+                              placeholder='Question (e.g., GitHub Handle)'
                               value={q.label}
-                              onChange={(e) => {
-                                const newQuestions = [...questions];
-                                newQuestions[index].label = e.target.value;
-                                setQuestions(newQuestions);
-                              }}
-                              className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                              onChange={(e) =>
+                                updateQuestion(index, 'label', e.target.value)
+                              }
+                              className='block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                             />
-                            <div className="flex items-center gap-4">
-                              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className='flex items-center gap-4'>
+                              <label className='flex items-center gap-2 text-xs text-muted-foreground'>
                                 <input
-                                  type="checkbox"
+                                  type='checkbox'
                                   checked={q.required}
                                   onChange={(e) => {
                                     const newQuestions = [...questions];
@@ -527,7 +567,7 @@ export default function ManageEvent() {
                                       e.target.checked;
                                     setQuestions(newQuestions);
                                   }}
-                                  className="h-3.5 w-3.5 rounded border-gray-300"
+                                  className='h-3.5 w-3.5 rounded border-gray-300'
                                 />
                                 Required
                               </label>
@@ -535,18 +575,13 @@ export default function ManageEvent() {
                             </div>
                           </div>
                           <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              const newQuestions = questions.filter(
-                                (_, i) => i !== index,
-                              );
-                              setQuestions(newQuestions);
-                            }}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            type='button'
+                            variant='ghost'
+                            size='icon'
+                            onClick={() => removeQuestion(index)}
+                            className='h-8 w-8 text-muted-foreground hover:text-destructive'
                           >
-                            <Trash className="h-4 w-4" />
+                            <Trash className='h-4 w-4' />
                           </Button>
                         </div>
                       ))}
@@ -554,10 +589,10 @@ export default function ManageEvent() {
                   )}
                 </div>
 
-                <div className="flex justify-end pt-4">
-                  <Button type="submit" disabled={saving || uploading}>
+                <div className='flex justify-end pt-4'>
+                  <Button type='submit' disabled={saving || uploading}>
                     {saving && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     )}
                     Save Changes
                   </Button>
@@ -567,61 +602,61 @@ export default function ManageEvent() {
           </div>
 
           {/* Right Column: Coordinators */}
-          <div className="space-y-6">
-            <div className="rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Users className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold font-heading text-foreground">
+          <div className='space-y-6'>
+            <div className='rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6'>
+              <div className='flex items-center gap-2 mb-6'>
+                <Users className='h-5 w-5 text-primary' />
+                <h2 className='text-lg font-bold font-heading text-foreground'>
                   Coordinators
                 </h2>
               </div>
 
               {canAddCoordinator && (
-                <form onSubmit={onAddCoordinator} className="mb-6">
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                <form onSubmit={onAddCoordinator} className='mb-6'>
+                  <label className='text-xs font-medium text-muted-foreground mb-1.5 block'>
                     Add Student Coordinator
                   </label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <div className='flex gap-2'>
+                    <div className='relative flex-1'>
+                      <Mail className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                       <input
-                        type="email"
-                        placeholder="student@example.com"
+                        type='email'
+                        placeholder='student@example.com'
                         value={coordEmail}
                         onChange={(e) => setCoordEmail(e.target.value)}
-                        className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        className='block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                       />
                     </div>
                     <Button
-                      type="submit"
-                      size="sm"
+                      type='submit'
+                      size='sm'
                       disabled={addingCoord || !coordEmail}
                     >
                       {addingCoord ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className='h-4 w-4 animate-spin' />
                       ) : (
-                        <Plus className="h-4 w-4" />
+                        <Plus className='h-4 w-4' />
                       )}
                     </Button>
                   </div>
                 </form>
               )}
 
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className='space-y-3'>
+                <h3 className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>
                   Current Team
                 </h3>
 
                 {/* Main Coordinator */}
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                    {event.mainCoordinator?.name?.charAt(0) || "F"}
+                <div className='flex items-center gap-3 p-3 rounded-lg bg-card border border-border'>
+                  <div className='h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold'>
+                    {event.mainCoordinator?.name?.charAt(0) || 'F'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-sm font-medium text-foreground truncate'>
                       {event.mainCoordinator?.name}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className='text-xs text-muted-foreground truncate'>
                       Faculty (Owner)
                     </p>
                   </div>
@@ -631,16 +666,16 @@ export default function ManageEvent() {
                 {event.coordinators?.map((coord) => (
                   <div
                     key={coord.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
+                    className='flex items-center gap-3 p-3 rounded-lg bg-card border border-border'
                   >
-                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground text-xs font-bold">
+                    <div className='h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground text-xs font-bold'>
                       {coord.name?.charAt(0)}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
+                    <div className='flex-1 min-w-0'>
+                      <p className='text-sm font-medium text-foreground truncate'>
                         {coord.name}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className='text-xs text-muted-foreground truncate'>
                         {coord.email}
                       </p>
                     </div>
@@ -648,7 +683,7 @@ export default function ManageEvent() {
                 ))}
 
                 {(!event.coordinators || event.coordinators.length === 0) && (
-                  <p className="text-sm text-muted-foreground italic text-center py-4">
+                  <p className='text-sm text-muted-foreground italic text-center py-4'>
                     No student coordinators assigned yet.
                   </p>
                 )}
@@ -657,6 +692,18 @@ export default function ManageEvent() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title='Delete Event'
+        description={`Are you sure you want to delete "${event?.name}"? This will remove all registrations and cannot be undone.`}
+        confirmLabel='Delete'
+        cancelLabel='Cancel'
+        variant='danger'
+        loading={deleting}
+        onConfirm={onDeleteEvent}
+      />
     </div>
   );
 }

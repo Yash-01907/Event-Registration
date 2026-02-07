@@ -1,4 +1,4 @@
-import prisma from "../config/db.js";
+import prisma from '../config/db.js';
 
 // @desc    Create a new event
 // @route   POST /api/events
@@ -28,7 +28,7 @@ const createEvent = async (req, res) => {
     res.status(201).json(event);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error creating event" });
+    res.status(500).json({ message: 'Server error creating event' });
   }
 };
 
@@ -55,14 +55,14 @@ const getEvents = async (req, res) => {
         },
       },
       orderBy: {
-        date: "asc",
+        date: 'asc',
       },
     });
 
     res.status(200).json(events);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error fetching events" });
+    res.status(500).json({ message: 'Server error fetching events' });
   }
 };
 
@@ -76,14 +76,14 @@ const getMyEvents = async (req, res) => {
         mainCoordinatorId: req.user.id,
       },
       orderBy: {
-        date: "desc",
+        date: 'desc',
       },
     });
 
     res.status(200).json(events);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error fetching your events" });
+    res.status(500).json({ message: 'Server error fetching your events' });
   }
 };
 
@@ -110,17 +110,17 @@ const getEventById = async (req, res) => {
     if (event) {
       res.status(200).json(event);
     } else {
-      res.status(404).json({ message: "Event not found" });
+      res.status(404).json({ message: 'Event not found' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error fetching event" });
+    res.status(500).json({ message: 'Server error fetching event' });
   }
 };
 
 // Helper to check event access
 const checkEventAccess = (event, user) => {
-  if (user.role === "ADMIN") return true;
+  if (user.role === 'ADMIN') return true;
   const isCoordinator = event.coordinators.some((c) => c.id === user.id);
   const isMain = event.mainCoordinatorId === user.id;
   return isMain || isCoordinator;
@@ -144,13 +144,13 @@ const updateEvent = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: 'Event not found' });
     }
 
     if (!checkEventAccess(event, req.user)) {
       return res
         .status(403)
-        .json({ message: "Not authorized to update this event" });
+        .json({ message: 'Not authorized to update this event' });
     }
 
     const updatedEvent = await prisma.event.update({
@@ -177,7 +177,7 @@ const updateEvent = async (req, res) => {
     res.status(200).json(updatedEvent);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error updating event" });
+    res.status(500).json({ message: 'Server error updating event' });
   }
 };
 
@@ -193,13 +193,13 @@ const addCoordinator = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: 'Event not found' });
     }
 
-    if (event.mainCoordinatorId !== req.user.id && req.user.role !== "ADMIN") {
+    if (event.mainCoordinatorId !== req.user.id && req.user.role !== 'ADMIN') {
       return res
         .status(403)
-        .json({ message: "Not authorized to add coordinators" });
+        .json({ message: 'Not authorized to add coordinators' });
     }
 
     const student = await prisma.user.findUnique({
@@ -209,7 +209,7 @@ const addCoordinator = async (req, res) => {
     if (!student) {
       return res
         .status(404)
-        .json({ message: "Student not found with this email" });
+        .json({ message: 'Student not found with this email' });
     }
 
     await prisma.event.update({
@@ -221,10 +221,10 @@ const addCoordinator = async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Coordinator added successfully" });
+    res.status(200).json({ message: 'Coordinator added successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error adding coordinator" });
+    res.status(500).json({ message: 'Server error adding coordinator' });
   }
 };
 
@@ -247,7 +247,7 @@ const getCoordinatedEvents = async (req, res) => {
         },
       },
       orderBy: {
-        date: "desc",
+        date: 'desc',
       },
     });
 
@@ -256,7 +256,47 @@ const getCoordinatedEvents = async (req, res) => {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Server error fetching coordinated events" });
+      .json({ message: 'Server error fetching coordinated events' });
+  }
+};
+
+// @desc    Delete event
+// @route   DELETE /api/events/:id
+// @access  Private (Main Coordinator, Coordinators, or Admin)
+const deleteEvent = async (req, res) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      include: {
+        coordinators: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (!checkEventAccess(event, req.user)) {
+      return res
+        .status(403)
+        .json({ message: 'Not authorized to delete this event' });
+    }
+
+    // Delete registrations first (foreign key constraint)
+    await prisma.registration.deleteMany({
+      where: { eventId: req.params.id },
+    });
+
+    await prisma.event.delete({
+      where: { id: req.params.id },
+    });
+
+    res.status(200).json({ message: 'Event deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error deleting event' });
   }
 };
 
@@ -275,13 +315,13 @@ const togglePublishStatus = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: 'Event not found' });
     }
 
     if (!checkEventAccess(event, req.user)) {
       return res
         .status(403)
-        .json({ message: "Not authorized to update this event" });
+        .json({ message: 'Not authorized to update this event' });
     }
 
     const updatedEvent = await prisma.event.update({
@@ -294,7 +334,7 @@ const togglePublishStatus = async (req, res) => {
     res.status(200).json(updatedEvent);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error updating publish status" });
+    res.status(500).json({ message: 'Server error updating publish status' });
   }
 };
 
@@ -304,6 +344,7 @@ export {
   getMyEvents,
   getEventById,
   updateEvent,
+  deleteEvent,
   addCoordinator,
   getCoordinatedEvents,
   togglePublishStatus,
