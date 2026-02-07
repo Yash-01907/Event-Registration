@@ -305,14 +305,14 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
               type="button"
               variant="ghost"
               onClick={onClose}
-              disabled={isLoading}
+              disabled={isLoading || uploading}
               className="text-gray-400 hover:text-white hover:bg-white/10"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || uploading}
               className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-bold hover:from-cyan-400 hover:to-cyan-500"
             >
               {isLoading ? (

@@ -204,7 +204,7 @@ export default function ManageEvent() {
                   onClick={onTogglePublish}
                   variant="outline"
                   size="sm"
-                  disabled={saving}
+                  disabled={saving || uploading}
                   className={cn(
                     "border-opacity-50",
                     event.isPublished
@@ -555,7 +555,7 @@ export default function ManageEvent() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button type="submit" disabled={saving}>
+                  <Button type="submit" disabled={saving || uploading}>
                     {saving && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
