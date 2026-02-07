@@ -94,3 +94,17 @@ export function useDeleteEvent() {
     },
   });
 }
+
+export function useCancelRegistration() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (registrationId) => {
+      const { data } = await api.delete(`/registrations/${registrationId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] });
+    },
+  });
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Loader2,
   MapPin,
@@ -8,57 +8,79 @@ import {
   Zap,
   XCircle,
 } from 'lucide-react';
-import api from '@/lib/api';
 import { Link } from 'react-router-dom';
+import { useMyRegistrations, useCancelRegistration } from '@/hooks/useEvents';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 
+const MyTicketsSkeleton = () => (
+  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+    {[1, 2, 3, 4, 5, 6].map((i) => (
+      <div
+        key={i}
+        className='glass-card rounded-2xl overflow-hidden flex flex-col'
+      >
+        <div className='h-28 bg-gray-700/50 animate-pulse relative'>
+          <div className='absolute top-3 right-3 h-6 w-20 bg-gray-700/70 rounded-lg animate-pulse' />
+        </div>
+        <div className='p-5 flex-grow flex flex-col'>
+          <div className='h-6 w-3/4 bg-gray-700/50 rounded animate-pulse mb-4' />
+          <div className='space-y-2 mb-5'>
+            <div className='flex items-center gap-2'>
+              <div className='h-4 w-4 bg-gray-700/50 rounded animate-pulse shrink-0' />
+              <div className='h-4 w-40 bg-gray-700/40 rounded animate-pulse' />
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='h-4 w-4 bg-gray-700/50 rounded animate-pulse shrink-0' />
+              <div className='h-4 w-16 bg-gray-700/40 rounded animate-pulse' />
+            </div>
+          </div>
+          <div className='border-t border-dashed border-gray-800 pt-4 flex items-center justify-between'>
+            <div className='space-y-2'>
+              <div className='h-3 w-16 bg-gray-700/40 rounded animate-pulse' />
+              <div className='h-8 w-24 bg-gray-700/50 rounded animate-pulse' />
+            </div>
+            <div className='h-14 w-14 bg-gray-700/50 rounded-lg animate-pulse' />
+          </div>
+          <div className='h-9 w-full bg-gray-700/50 rounded animate-pulse mt-4' />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export default function StudentDashboard() {
-  const [registrations, setRegistrations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: registrations = [], isLoading, error } = useMyRegistrations();
+  const cancelRegistrationMutation = useCancelRegistration();
+
   const [deregisterConfirmOpen, setDeregisterConfirmOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState(null);
-  const [deregistering, setDeregistering] = useState(false);
-
-  useEffect(() => {
-    const fetchRegistrations = async () => {
-      try {
-        const response = await api.get('/registrations/my');
-        setRegistrations(response.data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch tickets');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRegistrations();
-  }, []);
 
   const handleCancelRegistrationClick = (reg) => {
     setSelectedReg(reg);
     setDeregisterConfirmOpen(true);
   };
 
-  const handleConfirmDeregister = async () => {
+  const handleConfirmDeregister = () => {
     if (!selectedReg?.id) return;
-    setDeregistering(true);
-    try {
-      await api.delete(`/registrations/${selectedReg.id}`);
-      setRegistrations((prev) => prev.filter((r) => r.id !== selectedReg.id));
-      setDeregisterConfirmOpen(false);
-      setSelectedReg(null);
-      toast.success('Registration cancelled successfully');
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || 'Failed to cancel registration'
-      );
-    } finally {
-      setDeregistering(false);
-    }
+    cancelRegistrationMutation.mutate(selectedReg.id, {
+      onSuccess: () => {
+        setDeregisterConfirmOpen(false);
+        setSelectedReg(null);
+        toast.success('Registration cancelled successfully');
+      },
+      onError: (err) => {
+        toast.error(
+          err.response?.data?.message || 'Failed to cancel registration'
+        );
+      },
+    });
   };
+
+  const errorMessage = error
+    ? error?.response?.data?.message || 'Failed to fetch tickets'
+    : null;
 
   return (
     <div className='min-h-screen gradient-mesh pt-20 pb-12'>
@@ -80,17 +102,10 @@ export default function StudentDashboard() {
         </div>
 
         {isLoading ? (
-          <div className='flex justify-center items-center h-64'>
-            <div className='flex flex-col items-center gap-4'>
-              <Loader2 className='h-10 w-10 animate-spin text-cyan-400' />
-              <p className='text-gray-500 font-mono text-sm animate-pulse'>
-                LOADING TICKETS...
-              </p>
-            </div>
-          </div>
-        ) : error ? (
+          <MyTicketsSkeleton />
+        ) : errorMessage ? (
           <div className='glass-card rounded-xl p-6 border-red-500/30 text-red-400 font-mono text-center'>
-            ERROR: {error}
+            ERROR: {errorMessage}
           </div>
         ) : registrations.length === 0 ? (
           <div className='text-center py-20 glass-card rounded-2xl border-gray-800 border-dashed'>
@@ -178,9 +193,10 @@ export default function StudentDashboard() {
                     className='w-full mt-4 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300'
                     size='sm'
                     onClick={() => handleCancelRegistrationClick(reg)}
-                    disabled={deregistering}
+                    disabled={cancelRegistrationMutation.isPending}
                   >
-                    {deregistering && selectedReg?.id === reg.id ? (
+                    {cancelRegistrationMutation.isPending &&
+                    selectedReg?.id === reg.id ? (
                       <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     ) : (
                       <XCircle className='mr-2 h-4 w-4' />
@@ -205,7 +221,7 @@ export default function StudentDashboard() {
           confirmLabel='Yes, Cancel Registration'
           cancelLabel='Keep Registration'
           variant='danger'
-          loading={deregistering}
+          loading={cancelRegistrationMutation.isPending}
           onConfirm={handleConfirmDeregister}
         />
       </div>

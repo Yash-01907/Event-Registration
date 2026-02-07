@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import useAuthStore from '@/store/authStore';
-import { formatDate } from '@/lib/utils';
 
 import EventRegistrationModal from '@/components/events/EventRegistrationModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
