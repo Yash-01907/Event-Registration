@@ -46,11 +46,11 @@ const EventCard = memo(function EventCard({ event, index }) {
             className='w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100'
           />
         ) : (
-          <div className='w-full h-full flex items-center justify-center bg-linear-to-br from-gray-900 via-gray-800 to-gray-900'>
+          <div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'>
             <Cpu className='h-16 w-16 text-gray-700' />
           </div>
         )}
-        <div className='absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent' />
+        <div className='absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent' />
         <div className='absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity' />
         <div className='absolute top-4 right-4'>
           <span
@@ -102,7 +102,7 @@ const EventCard = memo(function EventCard({ event, index }) {
           </Button>
         ) : (
           <Link to={`/events/${event.id}`}>
-            <Button className='w-full btn-neon bg-linear-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30 hover:from-cyan-500 hover:to-purple-600 hover:text-white font-bold font-mono group/btn'>
+            <Button className='w-full btn-neon bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30 hover:from-cyan-500 hover:to-purple-600 hover:text-white font-bold font-mono group/btn'>
               VIEW DETAILS
               <ChevronRight className='ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1' />
             </Button>

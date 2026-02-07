@@ -190,96 +190,109 @@ export default function Profile() {
                     />
                   </div>
                 </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='space-y-2'>
-                    <Label
-                      htmlFor='rollNumber'
-                      className='text-gray-400 text-sm'
-                    >
-                      Roll Number
-                    </Label>
-                    <div className='relative'>
-                      <Hash className='absolute left-4 top-3 h-4 w-4 text-gray-600' />
-                      <Input
-                        id='rollNumber'
-                        placeholder='CS2024001'
-                        className='pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl'
-                        {...registerProfile('rollNumber')}
-                      />
-                    </div>
-                  </div>
-
-                  <div className='space-y-2'>
-                    <Label htmlFor='branch' className='text-gray-400 text-sm'>
-                      Branch
-                    </Label>
-                    <div className='relative'>
-                      <Select
-                        value={watchedBranch}
-                        onValueChange={(value) =>
-                          setProfileValue('branch', value)
-                        }
+                {user?.role === 'STUDENT' && (
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div className='space-y-2'>
+                      <Label
+                        htmlFor='rollNumber'
+                        className='text-gray-400 text-sm'
                       >
-                        <SelectTrigger className='pl-4 bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl h-10 w-full'>
-                          <div className='flex items-center gap-3'>
-                            <BookOpen className='h-4 w-4 text-gray-600' />
-                            <SelectValue placeholder='Select Branch' />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className='bg-gray-900 border-gray-800'>
-                          <SelectItem value='Automobile' className='text-white'>
-                            Automobile
-                          </SelectItem>
-                          <SelectItem value='Computer' className='text-white'>
-                            Computer
-                          </SelectItem>
-                          <SelectItem value='Mechanical' className='text-white'>
-                            Mechanical
-                          </SelectItem>
-                          <SelectItem value='Electrical' className='text-white'>
-                            Electrical
-                          </SelectItem>
-                          <SelectItem value='Civil' className='text-white'>
-                            Civil
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                        Roll Number
+                      </Label>
+                      <div className='relative'>
+                        <Hash className='absolute left-4 top-3 h-4 w-4 text-gray-600' />
+                        <Input
+                          id='rollNumber'
+                          placeholder='CS2024001'
+                          className='pl-11 bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl'
+                          {...registerProfile('rollNumber')}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='semester' className='text-gray-400 text-sm'>
-                      Semester
-                    </Label>
-                    <div className='relative'>
-                      <Select
-                        value={watchedSemester?.toString()}
-                        onValueChange={(value) =>
-                          setProfileValue('semester', value)
-                        }
-                      >
-                        <SelectTrigger className='pl-4 bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl h-10 w-full'>
-                          <div className='flex items-center gap-3'>
-                            <BookOpen className='h-4 w-4 text-gray-600' />
-                            <SelectValue placeholder='Select Semester' />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className='bg-gray-900 border-gray-800'>
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                    <div className='space-y-2'>
+                      <Label htmlFor='branch' className='text-gray-400 text-sm'>
+                        Branch
+                      </Label>
+                      <div className='relative'>
+                        <Select
+                          value={watchedBranch}
+                          onValueChange={(value) =>
+                            setProfileValue('branch', value)
+                          }
+                        >
+                          <SelectTrigger className='pl-4 bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl h-10 w-full'>
+                            <div className='flex items-center gap-3'>
+                              <BookOpen className='h-4 w-4 text-gray-600' />
+                              <SelectValue placeholder='Select Branch' />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className='bg-gray-900 border-gray-800'>
                             <SelectItem
-                              key={sem}
-                              value={sem.toString()}
+                              value='Automobile'
                               className='text-white'
                             >
-                              {sem}
+                              Automobile
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            <SelectItem value='Computer' className='text-white'>
+                              Computer
+                            </SelectItem>
+                            <SelectItem
+                              value='Mechanical'
+                              className='text-white'
+                            >
+                              Mechanical
+                            </SelectItem>
+                            <SelectItem
+                              value='Electrical'
+                              className='text-white'
+                            >
+                              Electrical
+                            </SelectItem>
+                            <SelectItem value='Civil' className='text-white'>
+                              Civil
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label
+                        htmlFor='semester'
+                        className='text-gray-400 text-sm'
+                      >
+                        Semester
+                      </Label>
+                      <div className='relative'>
+                        <Select
+                          value={watchedSemester?.toString()}
+                          onValueChange={(value) =>
+                            setProfileValue('semester', value)
+                          }
+                        >
+                          <SelectTrigger className='pl-4 bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl h-10 w-full'>
+                            <div className='flex items-center gap-3'>
+                              <BookOpen className='h-4 w-4 text-gray-600' />
+                              <SelectValue placeholder='Select Semester' />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className='bg-gray-900 border-gray-800'>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                              <SelectItem
+                                key={sem}
+                                value={sem.toString()}
+                                className='text-white'
+                              >
+                                {sem}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className='p-6 pt-0'>
