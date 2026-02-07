@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import useAuthStore from "@/store/authStore";
 import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -8,6 +9,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const { user } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -65,9 +67,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
               {...register("name", { required: "Event name is required" })}
             />
             {errors.name && (
-              <p className="mt-1 text-xs text-red-400">
-                {errors.name.message}
-              </p>
+              <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>
             )}
           </div>
 
@@ -77,7 +77,9 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
               <input
                 type="datetime-local"
                 className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 [color-scheme:dark]"
-                {...register("date", { required: "Date is required" })}
+                {...register("date", {
+                  required: user?.role === "ADMIN" ? false : "Date is required",
+                })}
               />
               {errors.date && (
                 <p className="mt-1 text-xs text-red-400">
@@ -94,7 +96,10 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                 min="0"
                 placeholder="0"
                 className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                {...register("fees", { required: "Fees is required", min: 0 })}
+                {...register("fees", {
+                  required: user?.role === "ADMIN" ? false : "Fees is required",
+                  min: 0,
+                })}
               />
               {errors.fees && (
                 <p className="mt-1 text-xs text-red-400">
@@ -110,7 +115,10 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
             </label>
             <select
               className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-              {...register("category", { required: "Category is required" })}
+              {...register("category", {
+                required:
+                  user?.role === "ADMIN" ? false : "Category is required",
+              })}
             >
               <option value="TECH" className="bg-gray-900">
                 Technical
@@ -136,7 +144,10 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
             <input
               placeholder="Enter venue"
               className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-              {...register("location", { required: "Location is required" })}
+              {...register("location", {
+                required:
+                  user?.role === "ADMIN" ? false : "Location is required",
+              })}
             />
             {errors.location && (
               <p className="mt-1 text-xs text-red-400">

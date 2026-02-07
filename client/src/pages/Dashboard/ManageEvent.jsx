@@ -12,6 +12,7 @@ import {
   Plus,
   Loader2,
   Trash,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -26,6 +27,8 @@ export default function ManageEvent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [addingCoord, setAddingCoord] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [coordEmail, setCoordEmail] = useState("");
   const [questions, setQuestions] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -52,6 +55,10 @@ export default function ManageEvent() {
       // Populate form
       setValue("name", response.data.name);
       setValue("category", response.data.category);
+      if (response.data.posterUrl) {
+        setPreviewUrl(response.data.posterUrl);
+        setValue("posterUrl", response.data.posterUrl);
+      }
       if (response.data.date) {
         // Format for datetime-local: YYYY-MM-DDTHH:mm
         const dateObj = new Date(response.data.date);
@@ -194,7 +201,10 @@ export default function ManageEvent() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onUpdateEvent)} className="space-y-4">
+              <form
+                onSubmit={handleSubmit(onUpdateEvent)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
@@ -270,6 +280,84 @@ export default function ManageEvent() {
                       className="block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       {...register("location")}
                     />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">
+                    Event Poster
+                  </label>
+
+                  <div className="flex items-start gap-4">
+                    {previewUrl ? (
+                      <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-700 group">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewUrl(null);
+                              setValue("posterUrl", "");
+                            }}
+                            className="text-white hover:text-red-400"
+                          >
+                            <X className="h-6 w-6" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-20 w-20 rounded-lg border border-dashed border-gray-700 bg-gray-900 flex items-center justify-center text-gray-600">
+                        <span className="text-xs">No Image</span>
+                      </div>
+                    )}
+
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploading}
+                        className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          setUploading(true);
+                          const formData = new FormData();
+                          formData.append("file", file);
+
+                          try {
+                            const res = await api.post("/upload", formData, {
+                              headers: {
+                                "Content-Type": "multipart/form-data",
+                              },
+                            });
+                            if (res.data.url) {
+                              setValue("posterUrl", res.data.url);
+                              setPreviewUrl(res.data.url);
+                            }
+                          } catch (error) {
+                            console.error("Upload failed", error);
+                            setMessage({
+                              type: "error",
+                              text: "Failed to upload image",
+                            });
+                          } finally {
+                            setUploading(false);
+                          }
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {uploading
+                          ? "Uploading..."
+                          : "Upload a poster image (JPG, PNG)"}
+                      </p>
+                      {/* Hidden input to store URL */}
+                      <input type="hidden" {...register("posterUrl")} />
+                    </div>
                   </div>
                 </div>
 
@@ -439,7 +527,9 @@ export default function ManageEvent() {
 
                 <div className="flex justify-end pt-4">
                   <Button type="submit" disabled={saving}>
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {saving && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Save Changes
                   </Button>
                 </div>
