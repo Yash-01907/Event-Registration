@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEvent, useUpdateEvent } from '@/hooks/useEvents';
 import { useForm } from 'react-hook-form';
 import {
   ArrowLeft,
@@ -20,20 +22,155 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
 
+const ManageEventSkeleton = () => (
+  <div className='min-h-screen gradient-mesh pt-20 pb-12'>
+    <div className='absolute inset-0 grid-pattern opacity-30 pointer-events-none' />
+    <div className='container mx-auto px-4 relative z-10'>
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
+        <div className='h-10 w-36 bg-gray-700/50 rounded-lg animate-pulse' />
+        <div className='flex gap-2'>
+          <div className='h-10 w-44 bg-gray-700/50 rounded-lg animate-pulse' />
+          <div className='h-10 w-28 bg-gray-700/50 rounded-lg animate-pulse' />
+        </div>
+      </div>
+
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
+        {/* Left Column: Event Details Skeleton */}
+        <div className='lg:col-span-2 space-y-6'>
+          <div className='rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6'>
+            <div className='flex justify-between items-center mb-6'>
+              <div className='h-6 w-40 bg-gray-700/50 rounded animate-pulse' />
+              <div className='h-9 w-24 bg-gray-700/50 rounded-lg animate-pulse' />
+            </div>
+            <div className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <div className='h-4 w-24 bg-gray-700/40 rounded animate-pulse mb-2' />
+                  <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+                </div>
+                <div>
+                  <div className='h-4 w-20 bg-gray-700/40 rounded animate-pulse mb-2' />
+                  <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+                </div>
+              </div>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <div className='h-4 w-28 bg-gray-700/40 rounded animate-pulse mb-2' />
+                  <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+                </div>
+                <div>
+                  <div className='h-4 w-16 bg-gray-700/40 rounded animate-pulse mb-2' />
+                  <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+                </div>
+              </div>
+              <div>
+                <div className='h-4 w-16 bg-gray-700/40 rounded animate-pulse mb-2' />
+                <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+              </div>
+              <div>
+                <div className='h-4 w-28 bg-gray-700/40 rounded animate-pulse mb-2' />
+                <div className='flex gap-4 mt-2'>
+                  <div className='h-20 w-20 bg-gray-700/50 rounded-lg animate-pulse shrink-0' />
+                  <div className='flex-1 space-y-2'>
+                    <div className='h-10 w-full bg-gray-700/50 rounded-md animate-pulse' />
+                    <div className='h-3 w-48 bg-gray-700/40 rounded animate-pulse' />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className='h-4 w-24 bg-gray-700/40 rounded animate-pulse mb-2' />
+                <div className='h-24 w-full bg-gray-700/50 rounded-md animate-pulse' />
+              </div>
+              <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-4 w-4 bg-gray-700/50 rounded animate-pulse' />
+                  <div className='h-4 w-24 bg-gray-700/50 rounded animate-pulse' />
+                </div>
+              </div>
+              <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-4 w-4 bg-gray-700/50 rounded animate-pulse' />
+                  <div className='h-4 w-40 bg-gray-700/50 rounded animate-pulse' />
+                </div>
+              </div>
+              <div className='p-4 rounded-lg bg-card border border-border space-y-4'>
+                <div className='flex justify-between items-center'>
+                  <div className='h-4 w-40 bg-gray-700/50 rounded animate-pulse' />
+                  <div className='h-8 w-28 bg-gray-700/50 rounded animate-pulse' />
+                </div>
+                <div className='space-y-3'>
+                  <div className='h-14 w-full bg-gray-700/40 rounded-md animate-pulse' />
+                  <div className='h-14 w-full bg-gray-700/40 rounded-md animate-pulse' />
+                </div>
+              </div>
+              <div className='flex justify-end pt-4'>
+                <div className='h-10 w-32 bg-gray-700/50 rounded-lg animate-pulse' />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Coordinators Skeleton */}
+        <div className='space-y-6'>
+          <div className='rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm p-6'>
+            <div className='flex items-center gap-2 mb-6'>
+              <div className='h-5 w-5 bg-gray-700/50 rounded animate-pulse' />
+              <div className='h-5 w-28 bg-gray-700/50 rounded animate-pulse' />
+            </div>
+            <div className='mb-6'>
+              <div className='h-3 w-40 bg-gray-700/40 rounded animate-pulse mb-2' />
+              <div className='flex gap-2'>
+                <div className='h-10 flex-1 bg-gray-700/50 rounded-md animate-pulse' />
+                <div className='h-10 w-10 bg-gray-700/50 rounded-md animate-pulse' />
+              </div>
+            </div>
+            <div className='space-y-3'>
+              <div className='h-3 w-24 bg-gray-700/40 rounded animate-pulse' />
+              <div className='flex items-center gap-3 p-3 rounded-lg bg-card border border-border'>
+                <div className='h-8 w-8 rounded-full bg-gray-700/50 animate-pulse shrink-0' />
+                <div className='flex-1 space-y-2'>
+                  <div className='h-4 w-32 bg-gray-700/50 rounded animate-pulse' />
+                  <div className='h-3 w-24 bg-gray-700/40 rounded animate-pulse' />
+                </div>
+              </div>
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className='flex items-center gap-3 p-3 rounded-lg bg-card border border-border'
+                >
+                  <div className='h-8 w-8 rounded-full bg-gray-700/50 animate-pulse shrink-0' />
+                  <div className='flex-1 space-y-2'>
+                    <div className='h-4 w-28 bg-gray-700/50 rounded animate-pulse' />
+                    <div className='h-3 w-40 bg-gray-700/40 rounded animate-pulse' />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 export default function ManageEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { data: event, isLoading: loading, error } = useEvent(id);
+  const updateEventMutation = useUpdateEvent(id);
+
   const [addingCoord, setAddingCoord] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [togglingPublish, setTogglingPublish] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [coordEmail, setCoordEmail] = useState('');
   const [questions, setQuestions] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  const saving = updateEventMutation.isPending || togglingPublish;
 
   const {
     register,
@@ -46,64 +183,49 @@ export default function ManageEvent() {
   const isTeamEvent = watch('isTeamEvent');
   const semControlEnabled = watch('semControlEnabled');
 
-  const fetchEvent = useCallback(async () => {
-    try {
-      const response = await api.get(`/events/${id}`);
-      // Populate form
-      const data = response.data;
-      setEvent(data);
-      setValue('name', data.name);
-      setValue('category', data.category);
-      if (data.posterUrl) {
-        setPreviewUrl(data.posterUrl);
-        setValue('posterUrl', data.posterUrl);
-      }
-      if (data.date) {
-        setValue('date', new Date(data.date).toISOString().slice(0, 16));
-      }
-      setValue('fees', data.fees);
-      setValue('location', data.location);
-      setValue('description', data.description);
-      setValue('isTeamEvent', data.isTeamEvent);
-      setValue('minTeamSize', data.minTeamSize);
-      setValue('maxTeamSize', data.maxTeamSize);
-      setValue('semControlEnabled', data.semControlEnabled ?? false);
-      setValue('maxSem', data.maxSem ?? '');
-      if (data.formConfig) setQuestions(data.formConfig);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch event', error);
-      toast.error('Failed to load event details');
-      setLoading(false);
+  useEffect(() => {
+    if (!event) return;
+    setValue('name', event.name);
+    setValue('category', event.category);
+    if (event.posterUrl) {
+      setPreviewUrl(event.posterUrl);
+      setValue('posterUrl', event.posterUrl);
     }
-  }, [id, setValue]);
+    if (event.date) {
+      setValue('date', new Date(event.date).toISOString().slice(0, 16));
+    }
+    setValue('fees', event.fees);
+    setValue('location', event.location);
+    setValue('description', event.description);
+    setValue('isTeamEvent', event.isTeamEvent);
+    setValue('minTeamSize', event.minTeamSize);
+    setValue('maxTeamSize', event.maxTeamSize);
+    setValue('semControlEnabled', event.semControlEnabled ?? false);
+    setValue('maxSem', event.maxSem ?? '');
+    if (event.formConfig) setQuestions(event.formConfig);
+  }, [event, setValue]);
 
   useEffect(() => {
-    fetchEvent();
-  }, [fetchEvent]);
+    if (error) toast.error('Failed to load event details');
+  }, [error]);
 
   const onUpdateEvent = useCallback(
-    async (data) => {
-      setSaving(true);
+    (formData) => {
       const payload = {
-        ...data,
+        ...formData,
         formConfig: questions,
         maxSem:
-          data.semControlEnabled && data.maxSem != null
-            ? parseInt(data.maxSem)
+          formData.semControlEnabled && formData.maxSem != null
+            ? parseInt(formData.maxSem)
             : null,
       };
-      try {
-        await api.put(`/events/${id}`, payload);
-        toast.success('Event updated successfully');
-        fetchEvent();
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to update event');
-      } finally {
-        setSaving(false);
-      }
+      updateEventMutation.mutate(payload, {
+        onSuccess: () => toast.success('Event updated successfully'),
+        onError: (err) =>
+          toast.error(err.response?.data?.message || 'Failed to update event'),
+      });
     },
-    [id, questions, fetchEvent]
+    [questions, updateEventMutation]
   );
 
   const isMainCoordinator = user?.id === event?.mainCoordinatorId;
@@ -114,6 +236,9 @@ export default function ManageEvent() {
     setDeleting(true);
     try {
       await api.delete(`/events/${id}`);
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', id] });
+      queryClient.invalidateQueries({ queryKey: ['my-events'] });
       toast.success('Event deleted successfully');
       navigate('/dashboard');
     } catch (error) {
@@ -121,25 +246,27 @@ export default function ManageEvent() {
     } finally {
       setDeleting(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, queryClient]);
 
   const onTogglePublish = useCallback(async () => {
+    setTogglingPublish(true);
     try {
-      setSaving(true);
       const res = await api.patch(`/events/${id}/publish`);
-      setEvent((prev) => ({ ...prev, isPublished: res.data.isPublished }));
+      const newPublished = res.data.isPublished;
+      queryClient.setQueryData(['events', id], (old) =>
+        old ? { ...old, isPublished: newPublished } : old
+      );
+      queryClient.invalidateQueries({ queryKey: ['my-events'] });
       toast.success(
-        `Event ${
-          res.data.isPublished ? 'Published' : 'Unpublished'
-        } successfully`
+        `${newPublished ? 'Published' : 'Unpublished'} successfully`
       );
     } catch (error) {
       console.error('Failed to toggle publish status', error);
       toast.error(error.response?.data?.message || 'Failed to update status');
     } finally {
-      setSaving(false);
+      setTogglingPublish(false);
     }
-  }, [id]);
+  }, [id, queryClient]);
 
   const onAddCoordinator = useCallback(
     async (e) => {
@@ -156,7 +283,7 @@ export default function ManageEvent() {
         await api.post(`/events/${id}/coordinator`, { email: coordEmail });
         setCoordEmail('');
         toast.success('Coordinator added successfully');
-        fetchEvent();
+        queryClient.invalidateQueries({ queryKey: ['events', id] });
       } catch (error) {
         toast.error(
           error.response?.data?.message || 'Failed to add coordinator'
@@ -165,7 +292,7 @@ export default function ManageEvent() {
         setAddingCoord(false);
       }
     },
-    [id, coordEmail, user, fetchEvent]
+    [id, coordEmail, user, queryClient]
   );
 
   const handlePosterUpload = useCallback(
@@ -214,12 +341,7 @@ export default function ManageEvent() {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  if (loading)
-    return (
-      <div className='flex justify-center pt-20'>
-        <Loader2 className='h-8 w-8 animate-spin text-primary' />
-      </div>
-    );
+  if (loading) return <ManageEventSkeleton />;
   if (!event) return <div className='text-center pt-20'>Event not found</div>;
 
   return (

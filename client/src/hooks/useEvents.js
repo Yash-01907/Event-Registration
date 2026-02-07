@@ -36,6 +36,35 @@ export function useMyRegistrations() {
   });
 }
 
+/** My events - faculty's own events for the dashboard. Only runs when user is logged in. */
+export function useMyEvents() {
+  const user = useAuthStore((s) => s.user);
+  return useQuery({
+    queryKey: ['my-events'],
+    queryFn: async () => {
+      const { data } = await api.get('/events/my-events');
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useUpdateEvent(id) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data } = await api.put(`/events/${id}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', id] });
+      queryClient.invalidateQueries({ queryKey: ['my-events'] });
+    },
+  });
+}
+
 export function useCreateEvent() {
   const queryClient = useQueryClient();
 
@@ -46,6 +75,7 @@ export function useCreateEvent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['my-events'] });
     },
   });
 }
@@ -60,6 +90,7 @@ export function useDeleteEvent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['my-events'] });
     },
   });
 }

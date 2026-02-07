@@ -1,13 +1,22 @@
 import { useState, useMemo } from 'react';
-import { Search, Cpu, Loader2, X } from 'lucide-react';
+import { Search, Cpu, X } from 'lucide-react';
 import { useEvents, useMyRegistrations } from '@/hooks/useEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import EventCard from '@/components/events/EventCard';
 
 export default function Events() {
-  const { data: events, isLoading, error } = useEvents();
+  const {
+    data: events,
+    isLoading,
+    error,
+    refetch: refetchEvents,
+  } = useEvents();
   const { data: myRegistrations = [], refetch: refetchMyRegistrations } =
     useMyRegistrations();
+  const handleRegistrationSuccess = () => {
+    refetchMyRegistrations();
+    refetchEvents();
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -95,13 +104,34 @@ export default function Events() {
         {/* Events Grid */}
         <div>
           {isLoading ? (
-            <div className='flex justify-center items-center h-64'>
-              <div className='flex flex-col items-center gap-4'>
-                <Loader2 className='h-10 w-10 animate-spin text-cyan-400' />
-                <p className='text-gray-500 font-mono text-sm'>
-                  Loading events...
-                </p>
-              </div>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {[...Array(6)].map((_, idx) => (
+                <div
+                  key={idx}
+                  className='glass-card rounded-2xl overflow-hidden flex flex-col h-full'
+                >
+                  <div className='h-48 bg-gray-800/80 animate-pulse' />
+                  <div className='p-5 flex flex-col grow space-y-4'>
+                    <div className='h-4 bg-gray-700/60 rounded animate-pulse w-3/4' />
+                    <div className='space-y-2'>
+                      <div className='h-3 bg-gray-700/50 rounded animate-pulse w-full' />
+                      <div className='h-3 bg-gray-700/50 rounded animate-pulse w-5/6' />
+                    </div>
+                    <div className='space-y-2'>
+                      <div className='h-3 bg-gray-700/50 rounded animate-pulse w-2/3' />
+                      <div className='h-3 bg-gray-700/50 rounded animate-pulse w-1/2' />
+                    </div>
+                    <div className='flex items-center justify-between pt-3 border-t border-gray-800'>
+                      <div className='h-3 bg-gray-700/50 rounded animate-pulse w-16' />
+                      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-12' />
+                    </div>
+                    <div className='flex gap-2 pt-2'>
+                      <div className='flex-1 h-9 bg-gray-700/50 rounded-xl animate-pulse' />
+                      <div className='flex-1 h-9 bg-gray-700/50 rounded-xl animate-pulse' />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className='text-center py-12 glass-card rounded-xl border-red-500/20 text-red-400 font-mono'>
@@ -127,7 +157,7 @@ export default function Events() {
                   event={event}
                   index={idx}
                   isRegistered={registeredEventIds.has(event.id)}
-                  onRegistrationSuccess={refetchMyRegistrations}
+                  onRegistrationSuccess={handleRegistrationSuccess}
                 />
               ))}
             </div>

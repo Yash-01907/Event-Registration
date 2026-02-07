@@ -133,9 +133,18 @@ const TypingText = memo(function TypingText({ text }) {
 const TECH_FEST_DATE = '2026-02-25T09:00:00';
 
 export default function Landing() {
-  const { data: events, isLoading, error } = useEvents();
+  const {
+    data: events,
+    isLoading,
+    error,
+    refetch: refetchEvents,
+  } = useEvents();
   const { data: myRegistrations = [], refetch: refetchMyRegistrations } =
     useMyRegistrations();
+  const handleRegistrationSuccess = () => {
+    refetchMyRegistrations();
+    refetchEvents();
+  };
   const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -406,7 +415,7 @@ export default function Landing() {
                     event={event}
                     index={idx}
                     isRegistered={registeredEventIds.has(event.id)}
-                    onRegistrationSuccess={refetchMyRegistrations}
+                    onRegistrationSuccess={handleRegistrationSuccess}
                   />
                 ))}
               </div>

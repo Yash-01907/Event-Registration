@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Calendar,
@@ -11,9 +12,38 @@ import {
   EyeOff,
   Trash2,
 } from 'lucide-react';
+
+const TableRowSkeleton = () => (
+  <tr>
+    <td className='px-6 py-4'>
+      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-40 mb-2' />
+      <div className='h-3 bg-gray-700/40 rounded animate-pulse w-56' />
+    </td>
+    <td className='px-6 py-4'>
+      <div className='h-6 bg-gray-700/50 rounded-lg animate-pulse w-16' />
+    </td>
+    <td className='px-6 py-4'>
+      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-20' />
+    </td>
+    <td className='px-6 py-4'>
+      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-24' />
+    </td>
+    <td className='px-6 py-4'>
+      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-12' />
+    </td>
+    <td className='px-6 py-4 text-right'>
+      <div className='flex justify-end gap-2'>
+        <div className='h-8 w-8 bg-gray-700/50 rounded-lg animate-pulse' />
+        <div className='h-8 w-8 bg-gray-700/50 rounded-lg animate-pulse' />
+        <div className='h-8 bg-gray-700/50 rounded-lg animate-pulse w-20' />
+      </div>
+    </td>
+  </tr>
+);
 import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
 import { toast } from 'sonner';
+import { useMyEvents, useDeleteEvent } from '@/hooks/useEvents';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import CreateEventModal from '@/components/events/CreateEventModal';
 import { cn } from '@/lib/utils';
@@ -43,16 +73,16 @@ const PUBLISH_BTN_CLASSES = {
 
 export default function FacultyDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: events = [], isLoading, error, refetch } = useMyEvents();
+  const deleteEventMutation = useDeleteEvent();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({
     open: false,
     eventId: null,
     eventName: '',
   });
-  const [deleting, setDeleting] = useState(false);
   const [togglingEventId, setTogglingEventId] = useState(null);
 
   const handleDeleteClick = useCallback((e, eventId, eventName) => {
@@ -60,60 +90,50 @@ export default function FacultyDashboard() {
     setDeleteConfirm({ open: true, eventId, eventName });
   }, []);
 
-  const handleConfirmDelete = useCallback(async () => {
+  const handleConfirmDelete = useCallback(() => {
     const { eventId } = deleteConfirm;
-    setDeleting(true);
-    try {
-      await api.delete(`/events/${eventId}`);
-      setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
-      toast.success('Event deleted successfully');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete event');
-    } finally {
-      setDeleting(false);
-    }
-  }, [deleteConfirm]);
+    if (!eventId) return;
+    deleteEventMutation.mutate(eventId, {
+      onSuccess: () => {
+        toast.success('Event deleted successfully');
+        setDeleteConfirm({ open: false, eventId: null, eventName: '' });
+      },
+      onError: (err) => {
+        toast.error(err.response?.data?.message || 'Failed to delete event');
+      },
+    });
+  }, [deleteConfirm, deleteEventMutation]);
 
-  const handleTogglePublish = useCallback(async (e, eventId) => {
-    e.stopPropagation();
-    setTogglingEventId(eventId);
-    try {
-      const response = await api.patch(`/events/${eventId}/publish`);
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === eventId
-            ? { ...event, isPublished: response.data.isPublished }
-            : event
-        )
-      );
-      toast.success(
-        response.data.isPublished ? 'Event published' : 'Event unpublished'
-      );
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || 'Failed to update publish status'
-      );
-    } finally {
-      setTogglingEventId(null);
-    }
-  }, []);
+  const handleTogglePublish = useCallback(
+    async (e, eventId) => {
+      e.stopPropagation();
+      setTogglingEventId(eventId);
+      try {
+        const response = await api.patch(`/events/${eventId}/publish`);
+        const newPublished = response.data.isPublished;
+        queryClient.setQueryData(['my-events'], (old) => {
+          if (!old || !Array.isArray(old)) return old;
+          return old.map((ev) =>
+            ev.id === eventId ? { ...ev, isPublished: newPublished } : ev
+          );
+        });
+        toast.success(newPublished ? 'Event published' : 'Event unpublished');
+      } catch (err) {
+        toast.error(
+          err.response?.data?.message || 'Failed to update publish status'
+        );
+      } finally {
+        setTogglingEventId(null);
+      }
+    },
+    [queryClient]
+  );
 
-  const fetchEvents = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.get('/events/my-events');
-      setEvents(response.data);
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch events');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+  const errorMessage = error
+    ? error?.response?.data?.message ||
+      error?.message ||
+      'Failed to fetch events'
+    : null;
 
   const closeModal = useCallback(() => setIsModalOpen(false), []);
   const handleDeleteDialogChange = useCallback((open) => {
@@ -149,17 +169,59 @@ export default function FacultyDashboard() {
         </div>
 
         {isLoading ? (
-          <div className='flex justify-center items-center h-64'>
-            <div className='flex flex-col items-center gap-4'>
-              <Loader2 className='h-10 w-10 animate-spin text-cyan-400' />
-              <p className='text-gray-500 font-mono text-sm animate-pulse'>
-                LOADING EVENTS...
-              </p>
+          <div className='glass-card rounded-2xl overflow-hidden'>
+            <div className='hidden md:block overflow-x-auto'>
+              <table className='w-full text-left'>
+                <thead className='border-b border-gray-800'>
+                  <tr className='text-xs uppercase text-gray-500 font-mono tracking-wider'>
+                    <th className='px-6 py-4'>Event Name</th>
+                    <th className='px-6 py-4'>Category</th>
+                    <th className='px-6 py-4'>Date</th>
+                    <th className='px-6 py-4'>Location</th>
+                    <th className='px-6 py-4'>Fees</th>
+                    <th className='px-6 py-4 text-right'>Status</th>
+                  </tr>
+                </thead>
+                <tbody className='divide-y divide-gray-800'>
+                  {[...Array(5)].map((_, idx) => (
+                    <TableRowSkeleton key={idx} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className='md:hidden grid gap-4 p-4'>
+              {[...Array(4)].map((_, idx) => (
+                <div
+                  key={idx}
+                  className='bg-white/5 border border-white/10 rounded-xl p-4 space-y-4'
+                >
+                  <div className='flex justify-between items-start'>
+                    <div className='space-y-2 flex-1'>
+                      <div className='h-5 bg-gray-700/50 rounded animate-pulse w-3/4' />
+                      <div className='h-3 bg-gray-700/40 rounded animate-pulse w-full' />
+                      <div className='h-3 bg-gray-700/40 rounded animate-pulse w-2/3' />
+                    </div>
+                    <div className='h-6 bg-gray-700/50 rounded-md animate-pulse w-14 shrink-0' />
+                  </div>
+                  <div className='space-y-2'>
+                    <div className='flex justify-between'>
+                      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-20' />
+                      <div className='h-4 bg-gray-700/50 rounded animate-pulse w-12' />
+                    </div>
+                    <div className='h-4 bg-gray-700/50 rounded animate-pulse w-28' />
+                  </div>
+                  <div className='flex gap-2 pt-2 border-t border-white/5'>
+                    <div className='flex-1 h-9 bg-gray-700/50 rounded-lg animate-pulse' />
+                    <div className='h-9 w-9 bg-gray-700/50 rounded-lg animate-pulse' />
+                    <div className='flex-1 h-9 bg-gray-700/50 rounded-lg animate-pulse' />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ) : error ? (
+        ) : errorMessage ? (
           <div className='glass-card rounded-xl p-6 border-red-500/30 text-red-400 font-mono text-center'>
-            ERROR: {error}
+            ERROR: {errorMessage}
           </div>
         ) : events.length === 0 ? (
           <div className='text-center py-20 glass-card rounded-2xl border-gray-800 border-dashed'>
@@ -381,7 +443,7 @@ export default function FacultyDashboard() {
         <CreateEventModal
           isOpen={isModalOpen}
           onClose={closeModal}
-          onEventCreated={fetchEvents}
+          onEventCreated={refetch}
         />
 
         <ConfirmDialog
@@ -392,7 +454,7 @@ export default function FacultyDashboard() {
           confirmLabel='Delete'
           cancelLabel='Cancel'
           variant='danger'
-          loading={deleting}
+          loading={deleteEventMutation.isPending}
           onConfirm={handleConfirmDelete}
         />
       </div>
