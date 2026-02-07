@@ -21,6 +21,8 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
 
   const isTeamEvent = watch("isTeamEvent");
 
+  console.log("Current User in Modal:", user);
+
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {

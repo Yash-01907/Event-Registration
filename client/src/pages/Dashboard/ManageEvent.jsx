@@ -108,6 +108,30 @@ export default function ManageEvent() {
     }
   };
 
+  const isMainCoordinator = user?.id === event?.mainCoordinatorId;
+  const isAdmin = user?.role === "ADMIN";
+  const canAddCoordinator = isMainCoordinator || isAdmin;
+
+  const onTogglePublish = async () => {
+    try {
+      setSaving(true);
+      const res = await api.patch(`/events/${id}/publish`);
+      setEvent((prev) => ({ ...prev, isPublished: res.data.isPublished }));
+      setMessage({
+        type: "success",
+        text: `Event ${res.data.isPublished ? "Published" : "Unpublished"} successfully`,
+      });
+    } catch (error) {
+      console.error("Failed to toggle publish status", error);
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Failed to update status",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const onAddCoordinator = async (e) => {
     e.preventDefault();
     if (!coordEmail) return;
@@ -176,16 +200,21 @@ export default function ManageEvent() {
                 <h2 className="text-xl font-bold font-heading text-foreground">
                   Edit Event Details
                 </h2>
-                <span
+                <Button
+                  onClick={onTogglePublish}
+                  variant="outline"
+                  size="sm"
+                  disabled={saving}
                   className={cn(
-                    "px-2.5 py-1 rounded-full text-xs font-medium border",
+                    "border-opacity-50",
                     event.isPublished
-                      ? "bg-green-400/10 text-green-400 ring-green-400/20"
-                      : "bg-yellow-400/10 text-yellow-400 ring-yellow-400/20",
+                      ? "bg-green-500/10 text-green-400 border-green-500 hover:bg-green-500/20 hover:text-green-300"
+                      : "bg-yellow-500/10 text-yellow-400 border-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-300",
                   )}
                 >
+                  {saving && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   {event.isPublished ? "Published" : "Draft"}
-                </span>
+                </Button>
               </div>
 
               {message.text && (
@@ -547,34 +576,36 @@ export default function ManageEvent() {
                 </h2>
               </div>
 
-              <form onSubmit={onAddCoordinator} className="mb-6">
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  Add Student Coordinator
-                </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="email"
-                      placeholder="student@example.com"
-                      value={coordEmail}
-                      onChange={(e) => setCoordEmail(e.target.value)}
-                      className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
+              {canAddCoordinator && (
+                <form onSubmit={onAddCoordinator} className="mb-6">
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    Add Student Coordinator
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="email"
+                        placeholder="student@example.com"
+                        value={coordEmail}
+                        onChange={(e) => setCoordEmail(e.target.value)}
+                        className="block w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={addingCoord || !coordEmail}
+                    >
+                      {addingCoord ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </Button>
                   </div>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={addingCoord || !coordEmail}
-                  >
-                    {addingCoord ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </form>
+                </form>
+              )}
 
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
