@@ -337,8 +337,22 @@ export default function ManageEvent() {
                       <input
                         type='datetime-local'
                         className='block w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                        {...register('date')}
+                        {...register('date', {
+                          validate: (value) => {
+                            if (!value) return true;
+                            const chosen = new Date(value);
+                            const now = new Date();
+                            if (chosen < now)
+                              return 'Event date must be in the future';
+                            return true;
+                          },
+                        })}
                       />
+                      {errors.date && (
+                        <p className='mt-1 text-xs text-destructive'>
+                          {errors.date.message}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -349,9 +363,17 @@ export default function ManageEvent() {
                       <IndianRupee className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                       <input
                         type='number'
+                        min='0'
                         className='block w-full hover:cursor-pointer rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                        {...register('fees')}
+                        {...register('fees', {
+                          min: { value: 0, message: 'Fees cannot be negative' },
+                        })}
                       />
+                      {errors.fees && (
+                        <p className='mt-1 text-xs text-destructive'>
+                          {errors.fees.message}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -517,6 +539,17 @@ export default function ManageEvent() {
                               value: 1,
                               message: 'Min size must be at least 1',
                             },
+                            validate: (value) => {
+                              if (!isTeamEvent) return true;
+                              const max = watch('maxTeamSize');
+                              if (
+                                max != null &&
+                                value != null &&
+                                Number(value) > Number(max)
+                              )
+                                return 'Min cannot be greater than max';
+                              return true;
+                            },
                           })}
                         />
                         {errors.minTeamSize && (
@@ -540,6 +573,17 @@ export default function ManageEvent() {
                             min: {
                               value: 1,
                               message: 'Max size must be at least 1',
+                            },
+                            validate: (value) => {
+                              if (!isTeamEvent) return true;
+                              const min = watch('minTeamSize');
+                              if (
+                                min != null &&
+                                value != null &&
+                                Number(value) < Number(min)
+                              )
+                                return 'Max cannot be less than min';
+                              return true;
                             },
                           })}
                         />

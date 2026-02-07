@@ -1,9 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import useAuthStore from '@/store/authStore';
 import { X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
-import { useState } from 'react';
 
 export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,11 +40,32 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && !isLoading && !uploading) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose, isLoading, uploading]);
+
   if (!isOpen) return null;
 
+  const handleBackdropClick = () => {
+    if (!isLoading && !uploading) onClose();
+  };
+
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm'>
-      <div className='relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-cyan-500/20 bg-gray-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200'>
+    <div
+      className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm'
+      onClick={handleBackdropClick}
+      role='dialog'
+      aria-modal='true'
+    >
+      <div
+        className='relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-cyan-500/20 bg-gray-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200'
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className='flex items-center justify-between mb-6'>
           <h2 className='text-xl font-bold font-heading text-white'>
             Create New<span className='text-cyan-400'>Event</span>
@@ -82,6 +103,13 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                 className='mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 [color-scheme:dark]'
                 {...register('date', {
                   required: user?.role === 'ADMIN' ? false : 'Date is required',
+                  validate: (value) => {
+                    if (!value) return true;
+                    const chosen = new Date(value);
+                    const now = new Date();
+                    if (chosen < now) return 'Event date must be in the future';
+                    return true;
+                  },
                 })}
               />
               {errors.date && (
@@ -101,7 +129,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                 className='mt-1 block w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500'
                 {...register('fees', {
                   required: user?.role === 'ADMIN' ? false : 'Fees is required',
-                  min: 0,
+                  min: { value: 0, message: 'Fees cannot be negative' },
                 })}
               />
               {errors.fees && (
@@ -232,6 +260,16 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                   {...register('minTeamSize', {
                     required: 'Min team size is required',
                     min: { value: 1, message: 'Min size must be at least 1' },
+                    validate: (value) => {
+                      const max = watch('maxTeamSize');
+                      if (
+                        max != null &&
+                        value != null &&
+                        Number(value) > Number(max)
+                      )
+                        return 'Min cannot be greater than max';
+                      return true;
+                    },
                   })}
                 />
                 {errors.minTeamSize && (
@@ -252,6 +290,16 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }) {
                   {...register('maxTeamSize', {
                     required: 'Max team size is required',
                     min: { value: 1, message: 'Max size must be at least 1' },
+                    validate: (value) => {
+                      const min = watch('minTeamSize');
+                      if (
+                        min != null &&
+                        value != null &&
+                        Number(value) < Number(min)
+                      )
+                        return 'Max cannot be less than min';
+                      return true;
+                    },
                   })}
                 />
                 {errors.maxTeamSize && (
