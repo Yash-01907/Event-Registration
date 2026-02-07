@@ -43,6 +43,12 @@ app.get("/", (req, res) => {
   res.send("UniFest API is running");
 });
 
+// server/src/server.js
+app.get("/api/cron-task", (req, res) => {
+  // Perform your scheduled task here (e.g., cleanup, emails)
+  console.log("Cron task executed");
+  res.status(200).send("Task completed");
+});
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
