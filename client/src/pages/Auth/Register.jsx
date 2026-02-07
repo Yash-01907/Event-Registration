@@ -29,12 +29,15 @@ const registerSchema = z
     phone: z
       .string()
       .min(10, { message: "Phone number must be at least 10 digits" }),
-    role: z.enum(["STUDENT", "FACULTY"], { message: "Please select a role" }),
+    role: z.literal("STUDENT"),
     rollNumber: z.string().optional(),
     branch: z
-      .enum(["Automobile", "Computer", "Mechanical", "Electrical", "Civil", ""], {
-        message: "Please select a valid branch",
-      })
+      .enum(
+        ["Automobile", "Computer", "Mechanical", "Electrical", "Civil", ""],
+        {
+          message: "Please select a valid branch",
+        },
+      )
       .optional()
       .transform((val) => (val === "" ? undefined : val)),
     semester: z.string().optional(),
@@ -45,17 +48,15 @@ const registerSchema = z
   })
   .refine(
     (data) => {
-      if (data.role === "STUDENT") {
-        if (!data.rollNumber) return false;
-        if (!data.branch) return false;
-        if (!data.semester) return false;
-      }
+      if (!data.rollNumber) return false;
+      if (!data.branch) return false;
+      if (!data.semester) return false;
       return true;
     },
     {
-      message: "Roll Number, Branch, and Semester are required for Students",
+      message: "Roll Number, Branch, and Semester are required",
       path: ["rollNumber"],
-    }
+    },
   );
 
 export default function Register() {
@@ -95,11 +96,7 @@ export default function Register() {
       const result = await registerUser(userData);
       if (result) {
         toast.success("Account created successfully!");
-        if (result.role === "FACULTY") {
-          navigate("/dashboard");
-        } else {
-          navigate("/");
-        }
+        navigate("/");
       }
     } catch (error) {
       console.error(error);
@@ -186,116 +183,92 @@ export default function Register() {
             )}
           </div>
 
-          {/* Role */}
-          <div className="space-y-2">
-            <Label htmlFor="role" className="text-gray-400 text-sm">
-              I am a
-            </Label>
-            <Select value={role} onValueChange={(value) => setValue("role", value)}>
-              <SelectTrigger className="bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl">
-                <SelectValue placeholder="Select your role" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-800">
-                <SelectItem value="STUDENT" className="text-white hover:bg-cyan-500/20">
-                  Student
-                </SelectItem>
-                <SelectItem value="FACULTY" className="text-white hover:bg-purple-500/20">
-                  Faculty
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.role && (
-              <p className="text-xs text-red-400 font-mono">
-                {errors.role.message}
-              </p>
-            )}
-          </div>
+          <div className="space-y-4 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
+            <div className="space-y-2">
+              <Label htmlFor="rollNumber" className="text-gray-400 text-sm">
+                Roll Number
+              </Label>
+              <Input
+                id="rollNumber"
+                placeholder="CS2024001"
+                {...register("rollNumber")}
+                className="bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
+              />
+              {errors.rollNumber && (
+                <p className="text-xs text-red-400 font-mono">
+                  {errors.rollNumber.message}
+                </p>
+              )}
+            </div>
 
-          {/* Student-specific fields */}
-          {role === "STUDENT" && (
-            <div className="space-y-4 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="rollNumber" className="text-gray-400 text-sm">
-                  Roll Number
+                <Label htmlFor="branch" className="text-gray-400 text-sm">
+                  Branch
                 </Label>
-                <Input
-                  id="rollNumber"
-                  placeholder="CS2024001"
-                  {...register("rollNumber")}
-                  className="bg-white/5 border-gray-800 text-white placeholder:text-gray-600 focus:border-cyan-500/50 rounded-xl"
-                />
-                {errors.rollNumber && (
+                <Select
+                  value={branch}
+                  onValueChange={(value) => setValue("branch", value)}
+                >
+                  <SelectTrigger className="bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl">
+                    <SelectValue placeholder="Branch" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-gray-800">
+                    <SelectItem value="Automobile" className="text-white">
+                      Automobile
+                    </SelectItem>
+                    <SelectItem value="Computer" className="text-white">
+                      Computer
+                    </SelectItem>
+                    <SelectItem value="Mechanical" className="text-white">
+                      Mechanical
+                    </SelectItem>
+                    <SelectItem value="Electrical" className="text-white">
+                      Electrical
+                    </SelectItem>
+                    <SelectItem value="Civil" className="text-white">
+                      Civil
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.branch && (
                   <p className="text-xs text-red-400 font-mono">
-                    {errors.rollNumber.message}
+                    {errors.branch.message}
                   </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="branch" className="text-gray-400 text-sm">
-                    Branch
-                  </Label>
-                  <Select
-                    value={branch}
-                    onValueChange={(value) => setValue("branch", value)}
-                  >
-                    <SelectTrigger className="bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl">
-                      <SelectValue placeholder="Branch" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                      <SelectItem value="Automobile" className="text-white">
-                        Automobile
+              <div className="space-y-2">
+                <Label htmlFor="semester" className="text-gray-400 text-sm">
+                  Semester
+                </Label>
+                <Select
+                  value={semester}
+                  onValueChange={(value) => setValue("semester", value)}
+                >
+                  <SelectTrigger className="bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl">
+                    <SelectValue placeholder="Sem" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-gray-800">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                      <SelectItem
+                        key={sem}
+                        value={sem.toString()}
+                        className="text-white"
+                      >
+                        {sem}
                       </SelectItem>
-                      <SelectItem value="Computer" className="text-white">
-                        Computer
-                      </SelectItem>
-                      <SelectItem value="Mechanical" className="text-white">
-                        Mechanical
-                      </SelectItem>
-                      <SelectItem value="Electrical" className="text-white">
-                        Electrical
-                      </SelectItem>
-                      <SelectItem value="Civil" className="text-white">
-                        Civil
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.branch && (
-                    <p className="text-xs text-red-400 font-mono">
-                      {errors.branch.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="semester" className="text-gray-400 text-sm">
-                    Semester
-                  </Label>
-                  <Select
-                    value={semester}
-                    onValueChange={(value) => setValue("semester", value)}
-                  >
-                    <SelectTrigger className="bg-white/5 border-gray-800 text-white focus:border-cyan-500/50 rounded-xl">
-                      <SelectValue placeholder="Sem" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                        <SelectItem key={sem} value={sem.toString()} className="text-white">
-                          {sem}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.semester && (
-                    <p className="text-xs text-red-400 font-mono">
-                      {errors.semester.message}
-                    </p>
-                  )}
-                </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.semester && (
+                  <p className="text-xs text-red-400 font-mono">
+                    {errors.semester.message}
+                  </p>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
           {/* Password */}
           <div className="space-y-2">
@@ -315,7 +288,11 @@ export default function Register() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-400 transition-colors"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
             {errors.password && (
