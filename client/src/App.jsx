@@ -8,6 +8,8 @@ import Footer from '@/components/shared/Footer';
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Auth/Login';
 import Register from '@/pages/Auth/Register';
+import ForgotPassword from '@/pages/Auth/ForgotPassword';
+import ResetPassword from '@/pages/Auth/ResetPassword';
 import ManageEvent from '@/pages/Dashboard/ManageEvent';
 import CoordinatorDashboard from '@/pages/Dashboard/CoordinatorDashboard';
 import EventRegistrations from '@/pages/Dashboard/EventRegistrations';
@@ -61,6 +63,8 @@ function App() {
               <Route path='/events/:id' element={<EventDetails />} />
               <Route path='/login' element={<Login />} />
               <Route path='/register' element={<Register />} />
+              <Route path='/forgot-password' element={<ForgotPassword />} />
+              <Route path='/reset-password' element={<ResetPassword />} />
               <Route
                 path='/dashboard'
                 element={

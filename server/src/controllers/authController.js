@@ -1,6 +1,6 @@
-import prisma from "../config/db.js";
-import bcrypt from "bcryptjs";
-import generateToken from "../utils/generateToken.js";
+import prisma from '../config/db.js';
+import bcrypt from 'bcryptjs';
+import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
     });
 
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        role: role || "STUDENT",
+        role: role || 'STUDENT',
         rollNumber,
         branch,
         semester: semester ? parseInt(semester) : null,
@@ -48,11 +48,11 @@ const registerUser = async (req, res) => {
         phone: user.phone,
       });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 // @desc    Auth user & get token
@@ -86,11 +86,11 @@ const loginUser = async (req, res) => {
         coordinatedEvents: user.coordinatedEvents,
       });
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -98,11 +98,11 @@ const loginUser = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = (req, res) => {
-  res.cookie("jwt", "", {
+  res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),
   });
-  res.status(200).json({ message: "Logged out successfully" });
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 // @desc    Get user profile
@@ -146,7 +146,7 @@ const updateUserProfile = async (req, res) => {
         where: { email: req.body.email },
       });
       if (emailExists) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res.status(400).json({ message: 'Email already in use' });
       }
     }
 
@@ -180,7 +180,7 @@ const updateUserProfile = async (req, res) => {
     });
   } else {
     res.status(404);
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 };
 
@@ -205,9 +205,91 @@ const changeUserPassword = async (req, res) => {
       },
     });
 
-    res.json({ message: "Password updated successfully" });
+    res.json({ message: 'Password updated successfully' });
   } else {
-    res.status(401).json({ message: "Invalid current password" });
+    res.status(401).json({ message: 'Invalid current password' });
+  }
+};
+
+// @desc    Request password reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Always return same message to prevent email enumeration
+    const message =
+      'If an account exists with that email, you will receive a password reset link.';
+
+    if (!user) {
+      return res.status(200).json({ message });
+    }
+
+    const { sendPasswordResetEmail } = await import('../utils/sendEmail.js');
+    const { generateResetToken } = await import(
+      '../utils/generateResetToken.js'
+    );
+    const resetToken = generateResetToken(user.id);
+
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      process.env.CORS_ORIGIN ||
+      'http://localhost:5173';
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+    await sendPasswordResetEmail(user.email, resetUrl, user.name);
+
+    res.status(200).json({ message });
+  } catch (error) {
+    console.error(error);
+    const msg = error.message?.includes('not configured')
+      ? error.message
+      : 'Server error';
+    res.status(500).json({ message: msg });
+  }
+};
+
+// @desc    Reset password with token
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const { verifyResetToken } = await import('../utils/generateResetToken.js');
+    const userId = verifyResetToken(token);
+
+    if (!userId) {
+      return res.status(400).json({
+        message: 'Invalid or expired reset link. Please request a new one.',
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid reset link.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -218,4 +300,6 @@ export {
   getUserProfile,
   updateUserProfile,
   changeUserPassword,
+  forgotPassword,
+  resetPassword,
 };

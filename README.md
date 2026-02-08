@@ -140,6 +140,13 @@ PORT=5000
 CLOUDINARY_CLOUD_NAME="your-cloud-name"
 CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
+
+# For forgot-password emails (Gmail: use app password)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+FRONTEND_URL=http://localhost:5173
 ```
 
 Run migrations and start the server:
@@ -174,15 +181,21 @@ The app runs at `http://localhost:5173` (or the port Vite assigns).
 
 ### Server (`server/.env`)
 
-| Variable       | Required | Description                                  |
-| -------------- | -------- | -------------------------------------------- |
-| DATABASE_URL   | Yes      | PostgreSQL connection string (pooled)        |
-| DIRECT_URL     | Yes      | Direct connection for Prisma migrations      |
-| JWT_SECRET     | Yes      | Secret for signing JWTs                      |
-| JWT_EXPIRES_IN | Yes      | Token expiry (e.g. `7d`)                     |
-| CORS_ORIGIN    | Yes      | Client origin (e.g. `http://localhost:5173`) |
-| PORT           | No       | Server port (default: 5000)                  |
-| CLOUDINARY\_\* | Yes      | Cloudinary credentials for poster uploads    |
+| Variable       | Required            | Description                                        |
+| -------------- | ------------------- | -------------------------------------------------- |
+| DATABASE_URL   | Yes                 | PostgreSQL connection string (pooled)              |
+| DIRECT_URL     | Yes                 | Direct connection for Prisma migrations            |
+| JWT_SECRET     | Yes                 | Secret for signing JWTs                            |
+| JWT_EXPIRES_IN | Yes                 | Token expiry (e.g. `7d`)                           |
+| CORS_ORIGIN    | Yes                 | Client origin (e.g. `http://localhost:5173`)       |
+| PORT           | No                  | Server port (default: 5000)                        |
+| CLOUDINARY\_\* | Yes                 | Cloudinary credentials for poster uploads          |
+| SMTP_HOST      | For forgot-password | SMTP host (e.g. `smtp.gmail.com`)                  |
+| SMTP_PORT      | For forgot-password | SMTP port (default: 587)                           |
+| SMTP_USER      | For forgot-password | SMTP auth email                                    |
+| SMTP_PASS      | For forgot-password | SMTP password or app password                      |
+| FRONTEND_URL   | For forgot-password | Base URL for reset links (defaults to CORS_ORIGIN) |
+| APP_NAME       | No                  | App name in emails (default: Event Registration)   |
 
 ### Client (`client/.env`)
 
