@@ -1,17 +1,19 @@
-import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
 import {
   registerForEvent,
   getMyRegistrations,
   getEventRegistrations,
+  deleteRegistration,
   createManualRegistration,
-} from "../controllers/registrationController.js";
+} from '../controllers/registrationController.js';
 
 const router = express.Router();
 
-router.post("/", protect, registerForEvent);
-router.post("/manual", protect, createManualRegistration);
-router.get("/my", protect, getMyRegistrations);
-router.get("/event/:eventId", protect, getEventRegistrations);
+router.post('/', protect, registerForEvent);
+router.post('/manual', protect, createManualRegistration);
+router.get('/my', protect, getMyRegistrations);
+router.get('/event/:eventId', protect, getEventRegistrations);
+router.delete('/:id', protect, deleteRegistration);
 
 export default router;

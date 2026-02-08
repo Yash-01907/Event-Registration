@@ -78,7 +78,11 @@ const registerForEvent = async (req, res) => {
     }
 
     // Check Form Config
-    if (event.formConfig && Array.isArray(event.formConfig)) {
+    if (
+      event.formConfig &&
+      Array.isArray(event.formConfig) &&
+      event.formConfig.length > 0
+    ) {
       if (!formData) {
         return res.status(400).json({ message: "Form data is missing" });
       }
@@ -210,6 +214,39 @@ const getEventRegistrations = async (req, res) => {
   }
 };
 
+// @desc    Deregister / Cancel registration (individual or team)
+// @route   DELETE /api/registrations/:id
+// @access  Private (Student - own registration only)
+const deleteRegistration = async (req, res) => {
+  const { id: registrationId } = req.params;
+
+  try {
+    const registration = await prisma.registration.findUnique({
+      where: { id: registrationId },
+    });
+
+    if (!registration) {
+      return res.status(404).json({ message: "Registration not found" });
+    }
+
+    // Only the student who registered can cancel
+    if (registration.studentId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to cancel this registration" });
+    }
+
+    await prisma.registration.delete({
+      where: { id: registrationId },
+    });
+
+    res.status(200).json({ message: "Registration cancelled successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error cancelling registration" });
+  }
+};
+
 // @desc    Manually register a student (Manual Entry)
 // @route   POST /api/registrations/manual
 // @access  Private (Coordinator/Faculty)
@@ -297,5 +334,6 @@ export {
   registerForEvent,
   getMyRegistrations,
   getEventRegistrations,
+  deleteRegistration,
   createManualRegistration,
 };
