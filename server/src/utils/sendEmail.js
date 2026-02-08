@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const isEmailConfigured = () => {
   return (
@@ -12,13 +12,16 @@ const isEmailConfigured = () => {
 const createTransporter = () => {
   if (!isEmailConfigured()) return null;
 
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port,
-    secure,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure, // true for 465, false for other ports
+    pool: true, // This enables connection pooling
+    maxConnections: 5, // Number of simultaneous connections to keep open
+    maxMessages: 100, // Number of messages to send per connection before closing it
+    rateLimit: 10, // Max number of messages per second to prevent being flagged as spam
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -36,17 +39,17 @@ const createTransporter = () => {
 export const sendPasswordResetEmail = async (
   to,
   resetUrl,
-  userName = 'User'
+  userName = "User",
 ) => {
   const transporter = createTransporter();
   if (!transporter) {
     throw new Error(
-      'Email service is not configured. Please contact the administrator.'
+      "Email service is not configured. Please contact the administrator.",
     );
   }
 
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
-  const appName = process.env.APP_NAME || 'Event Registration';
+  const appName = process.env.APP_NAME || "Event Registration";
 
   await transporter.sendMail({
     from: `"${appName}" <${from}>`,
@@ -81,17 +84,17 @@ export const sendPasswordResetEmail = async (
 export const sendVerificationEmail = async (
   to,
   verifyUrl,
-  userName = 'User'
+  userName = "User",
 ) => {
   const transporter = createTransporter();
   if (!transporter) {
     throw new Error(
-      'Email service is not configured. Please contact the administrator.'
+      "Email service is not configured. Please contact the administrator.",
     );
   }
 
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
-  const appName = process.env.APP_NAME || 'Event Registration';
+  const appName = process.env.APP_NAME || "Event Registration";
 
   await transporter.sendMail({
     from: `"${appName}" <${from}>`,
