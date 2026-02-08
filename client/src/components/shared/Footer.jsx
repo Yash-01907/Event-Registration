@@ -31,25 +31,13 @@ export default function Footer() {
             {/* Social Links */}
             <div className='flex items-center gap-4 pt-2'>
               <a
-                href='#'
-                className='text-gray-600 hover:text-cyan-400 transition-colors'
-              >
-                <Github className='h-5 w-5' />
-              </a>
-              <a
-                href='#'
-                className='text-gray-600 hover:text-cyan-400 transition-colors'
-              >
-                <Twitter className='h-5 w-5' />
-              </a>
-              <a
-                href='#'
+                href='https://www.linkedin.com/school/gidc-degree-engineering-college-navsari/'
                 className='text-gray-600 hover:text-cyan-400 transition-colors'
               >
                 <Linkedin className='h-5 w-5' />
               </a>
               <a
-                href='#'
+                href='https://www.instagram.com/gdeccollege/'
                 className='text-gray-600 hover:text-fuchsia-400 transition-colors'
               >
                 <Instagram className='h-5 w-5' />

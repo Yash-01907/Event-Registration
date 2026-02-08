@@ -1,6 +1,6 @@
-import prisma from '../config/db.js';
-import bcrypt from 'bcryptjs';
-import { checkEventAccess } from './eventController.js';
+import prisma from "../config/db.js";
+import bcrypt from "bcryptjs";
+import { checkEventAccess } from "./eventController.js";
 
 // @desc    Register for an event
 // @route   POST /api/registrations
@@ -16,7 +16,7 @@ const registerForEvent = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
     // 1. Check Deadline
@@ -26,7 +26,7 @@ const registerForEvent = async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ message: 'Registration invalid: Deadline has passed' });
+        .json({ message: "Registration invalid: Deadline has passed" });
     }
 
     // 2. Check Capacity
@@ -37,7 +37,7 @@ const registerForEvent = async (req, res) => {
       if (currentCount >= event.maxParticipants) {
         return res
           .status(400)
-          .json({ message: 'Registration invalid: Event is full' });
+          .json({ message: "Registration invalid: Event is full" });
       }
     }
 
@@ -48,7 +48,7 @@ const registerForEvent = async (req, res) => {
       if (!teamName || !teamName.trim()) {
         return res
           .status(400)
-          .json({ message: 'Team name is required for team events' });
+          .json({ message: "Team name is required for team events" });
       }
 
       let members = [];
@@ -78,15 +78,19 @@ const registerForEvent = async (req, res) => {
     }
 
     // Check Form Config
-    if (event.formConfig && Array.isArray(event.formConfig)) {
+    if (
+      event.formConfig &&
+      Array.isArray(event.formConfig) &&
+      event.formConfig.length > 0
+    ) {
       if (!formData) {
-        return res.status(400).json({ message: 'Form data is missing' });
+        return res.status(400).json({ message: "Form data is missing" });
       }
 
       for (const field of event.formConfig) {
         if (
           field.required &&
-          (!formData[field.label] || formData[field.label].trim() === '')
+          (!formData[field.label] || formData[field.label].trim() === "")
         ) {
           return res
             .status(400)
@@ -106,14 +110,14 @@ const registerForEvent = async (req, res) => {
     if (existingRegistration) {
       return res
         .status(400)
-        .json({ message: 'You are already registered for this event' });
+        .json({ message: "You are already registered for this event" });
     }
 
     const registration = await prisma.registration.create({
       data: {
         eventId,
         studentId,
-        type: 'ONLINE',
+        type: "ONLINE",
         teamName,
         teamMembers: teamMembers ? teamMembers : undefined,
         formData: formData ? formData : undefined,
@@ -123,7 +127,7 @@ const registerForEvent = async (req, res) => {
     res.status(201).json(registration);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -146,14 +150,14 @@ const getMyRegistrations = async (req, res) => {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     res.status(200).json(registrations);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -173,13 +177,13 @@ const getEventRegistrations = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
-    if (req.user.role !== 'FACULTY' && !checkEventAccess(event, req.user)) {
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user)) {
       return res
         .status(403)
-        .json({ message: 'Not authorized to view these registrations' });
+        .json({ message: "Not authorized to view these registrations" });
     }
 
     const registrations = await prisma.registration.findMany({
@@ -199,14 +203,14 @@ const getEventRegistrations = async (req, res) => {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     res.status(200).json(registrations);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -222,24 +226,24 @@ const deleteRegistration = async (req, res) => {
     });
 
     if (!registration) {
-      return res.status(404).json({ message: 'Registration not found' });
+      return res.status(404).json({ message: "Registration not found" });
     }
 
     // Only the student who registered can cancel
     if (registration.studentId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: 'Not authorized to cancel this registration' });
+        .json({ message: "Not authorized to cancel this registration" });
     }
 
     await prisma.registration.delete({
       where: { id: registrationId },
     });
 
-    res.status(200).json({ message: 'Registration cancelled successfully' });
+    res.status(200).json({ message: "Registration cancelled successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error cancelling registration' });
+    res.status(500).json({ message: "Server error cancelling registration" });
   }
 };
 
@@ -259,12 +263,12 @@ const createManualRegistration = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
-    if (req.user.role !== 'FACULTY' && !checkEventAccess(event, req.user)) {
+    if (req.user.role !== "FACULTY" && !checkEventAccess(event, req.user)) {
       return res.status(403).json({
-        message: 'Not authorized to add registrations for this event',
+        message: "Not authorized to add registrations for this event",
       });
     }
     // 1. Check if user exists
@@ -274,14 +278,14 @@ const createManualRegistration = async (req, res) => {
 
     // 2. If not, create new user
     if (!user) {
-      const crypto = await import('crypto');
-      const tempPassword = crypto.randomBytes(16).toString('hex');
+      const crypto = await import("crypto");
+      const tempPassword = crypto.randomBytes(16).toString("hex");
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(tempPassword, salt);
 
       // TODO: Send email with tempPassword
       console.log(
-        `[MANUAL_REGISTRATION] Created user ${email} with password: ${tempPassword}`
+        `[MANUAL_REGISTRATION] Created user ${email} with password: ${tempPassword}`,
       );
 
       user = await prisma.user.create({
@@ -289,7 +293,7 @@ const createManualRegistration = async (req, res) => {
           name,
           email,
           password: hashedPassword,
-          role: 'STUDENT',
+          role: "STUDENT",
           rollNumber,
           phone,
         },
@@ -307,7 +311,7 @@ const createManualRegistration = async (req, res) => {
     if (existingRegistration) {
       return res
         .status(400)
-        .json({ message: 'Student is already registered for this event' });
+        .json({ message: "Student is already registered for this event" });
     }
 
     // 4. Create Registration
@@ -315,14 +319,14 @@ const createManualRegistration = async (req, res) => {
       data: {
         eventId,
         studentId: user.id,
-        type: 'MANUAL',
+        type: "MANUAL",
       },
     });
 
     res.status(201).json(registration);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
