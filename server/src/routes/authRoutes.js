@@ -9,6 +9,7 @@ import {
   changeUserPassword,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 } from '../controllers/authController.js';
 
 import { body } from 'express-validator';
@@ -61,6 +62,10 @@ const resetPasswordValidation = [
     .withMessage('New password must be at least 6 characters'),
 ];
 
+const verifyEmailValidation = [
+  body('token').notEmpty().withMessage('Verification token is required'),
+];
+
 router.post(
   '/register',
   authLimiter,
@@ -80,6 +85,12 @@ router.post(
   authLimiter,
   validate(resetPasswordValidation),
   resetPassword
+);
+router.post(
+  '/verify-email',
+  authLimiter,
+  validate(verifyEmailValidation),
+  verifyEmail
 );
 router.get('/profile', protect, getUserProfile);
 router.put(

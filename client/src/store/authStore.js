@@ -54,19 +54,13 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  // Register
+  // Register (does not log in - user must verify email first)
   register: async (userData) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.post('/auth/register', userData);
-      const user = response.data;
-      setStoredUser(user);
-      set({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      return user;
+      set({ isLoading: false });
+      return response.data; // { message } - user not logged in
     } catch (error) {
       set({
         error: error.response?.data?.message || 'Registration failed',

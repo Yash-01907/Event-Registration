@@ -2,7 +2,7 @@ import prisma from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import generateToken from '../utils/generateToken.js';
 
-// @desc    Register a new user
+// @desc    Register a new user (sends verification email, does not log in)
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
@@ -27,6 +27,7 @@ const registerUser = async (req, res) => {
         email,
         password: hashedPassword,
         role: role || 'STUDENT',
+        emailVerified: false,
         rollNumber,
         branch,
         semester: semester ? parseInt(semester) : null,
@@ -34,25 +35,33 @@ const registerUser = async (req, res) => {
       },
     });
 
-    if (user) {
-      generateToken(res, user.id);
-
-      res.status(201).json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        rollNumber: user.rollNumber,
-        branch: user.branch,
-        semester: user.semester,
-        phone: user.phone,
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid user data' });
     }
+
+    const { sendVerificationEmail } = await import('../utils/sendEmail.js');
+    const { generateVerificationToken } = await import(
+      '../utils/generateResetToken.js'
+    );
+    const verificationToken = generateVerificationToken(user.id);
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      process.env.CORS_ORIGIN ||
+      'http://localhost:5173';
+    const verifyUrl = `${baseUrl}/verify-email?token=${verificationToken}`;
+
+    await sendVerificationEmail(user.email, verifyUrl, user.name);
+
+    res.status(201).json({
+      message:
+        'Account created! Please check your email to verify your account before signing in.',
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    const msg = error.message?.includes('not configured')
+      ? error.message
+      : 'Server error';
+    res.status(500).json({ message: msg });
   }
 };
 // @desc    Auth user & get token
@@ -71,23 +80,30 @@ const loginUser = async (req, res) => {
       },
     });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      generateToken(res, user.id);
-
-      res.status(200).json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        rollNumber: user.rollNumber,
-        branch: user.branch,
-        semester: user.semester,
-        phone: user.phone,
-        coordinatedEvents: user.coordinatedEvents,
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+    if (!user.emailVerified) {
+      return res.status(403).json({
+        message:
+          'Please verify your email before signing in. Check your inbox for the verification link.',
+      });
+    }
+
+    generateToken(res, user.id);
+
+    res.status(200).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      rollNumber: user.rollNumber,
+      branch: user.branch,
+      semester: user.semester,
+      phone: user.phone,
+      coordinatedEvents: user.coordinatedEvents,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -293,6 +309,39 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// @desc    Verify email with token from verification link
+// @route   POST /api/auth/verify-email
+// @access  Public
+const verifyEmail = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const { verifyVerificationToken } = await import(
+      '../utils/generateResetToken.js'
+    );
+    const userId = verifyVerificationToken(token);
+
+    if (!userId) {
+      return res.status(400).json({
+        message:
+          'Invalid or expired verification link. Please register again or request a new verification email.',
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { emailVerified: true },
+    });
+
+    res
+      .status(200)
+      .json({ message: 'Email verified successfully! You can now sign in.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -302,4 +351,5 @@ export {
   changeUserPassword,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 };

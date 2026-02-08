@@ -74,3 +74,48 @@ export const sendPasswordResetEmail = async (
 
   return true;
 };
+
+/**
+ * Send email verification link to the user.
+ */
+export const sendVerificationEmail = async (
+  to,
+  verifyUrl,
+  userName = 'User'
+) => {
+  const transporter = createTransporter();
+  if (!transporter) {
+    throw new Error(
+      'Email service is not configured. Please contact the administrator.'
+    );
+  }
+
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const appName = process.env.APP_NAME || 'Event Registration';
+
+  await transporter.sendMail({
+    from: `"${appName}" <${from}>`,
+    to,
+    subject: `Verify your email - ${appName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Verify your email</h2>
+        <p>Hi ${userName},</p>
+        <p>Thanks for registering! Please verify your email address by clicking the link below:</p>
+        <p style="margin: 24px 0;">
+          <a href="${verifyUrl}" style="background: #06b6d4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+            Verify Email
+          </a>
+        </p>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6b7280; font-size: 14px;">${verifyUrl}</p>
+        <p style="color: #9ca3af; font-size: 14px; margin-top: 32px;">
+          This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+    text: `Hi ${userName},\n\nPlease verify your email by visiting: ${verifyUrl}\n\nThis link expires in 24 hours.`,
+  });
+
+  return true;
+};
