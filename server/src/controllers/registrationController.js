@@ -198,6 +198,7 @@ const getEventRegistrations = async (req, res) => {
             email: true,
             rollNumber: true,
             branch: true,
+            semester: true,
             phone: true,
           },
         },
