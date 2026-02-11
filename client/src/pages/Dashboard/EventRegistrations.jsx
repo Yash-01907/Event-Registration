@@ -11,6 +11,7 @@ import {
 import { useEvent, useEventRegistrations } from '@/hooks/useEvents';
 import { formatDate } from '@/lib/utils';
 import ManualEntryModal from '@/components/dashboard/ManualEntryModal';
+import useAuthStore from '@/store/authStore';
 
 const EventRegistrationsSkeleton = () => (
   <div className='space-y-4'>
@@ -86,6 +87,7 @@ const EventRegistrationsSkeleton = () => (
 
 export default function EventRegistrations() {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const { data: event } = useEvent(id);
   const {
     data: registrations = [],
@@ -131,8 +133,7 @@ export default function EventRegistrations() {
           `"${reg.type}"`,
           `"${reg.teamName || ''}"`,
           `"${(reg.teamMembers || []).join('; ')}"`,
-          `"${
-            reg.formData ? JSON.stringify(reg.formData).replace(/"/g, "'") : ''
+          `"${reg.formData ? JSON.stringify(reg.formData).replace(/"/g, "'") : ''
           }"`,
           `"${formatDate(reg.createdAt)}"`,
         ].join(',')
@@ -161,7 +162,10 @@ export default function EventRegistrations() {
         <div className='mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
           <div>
             <Link
-              to='/coordinator-dashboard'
+              to={user?.role === 'FACULTY' || user?.role === 'ADMIN'
+                ? '/dashboard'
+                : '/coordinator-dashboard'
+              }
               className='flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-2'
             >
               <ArrowLeft className='h-4 w-4 mr-1' />
@@ -255,11 +259,10 @@ export default function EventRegistrations() {
                           </td>
                           <td className='px-6 py-4'>
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                                reg.type === 'MANUAL'
-                                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                  : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                              }`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${reg.type === 'MANUAL'
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                }`}
                             >
                               {reg.type}
                             </span>
@@ -307,11 +310,10 @@ export default function EventRegistrations() {
                             </div>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                              reg.type === 'MANUAL'
-                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                            }`}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${reg.type === 'MANUAL'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                              }`}
                           >
                             {reg.type}
                           </span>
@@ -439,6 +441,6 @@ export default function EventRegistrations() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </div >
   );
 }
