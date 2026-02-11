@@ -112,8 +112,8 @@ export default function EventRegistrations() {
     const headers = [
       'Student Name',
       'Roll Number',
-      'branch',
-      'semester',
+      'Branch',
+      'Semester',
       'Email',
       'Phone',
       'Registration Type',
