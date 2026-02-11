@@ -112,6 +112,8 @@ export default function EventRegistrations() {
     const headers = [
       'Student Name',
       'Roll Number',
+      'branch',
+      'semester',
       'Email',
       'Phone',
       'Registration Type',
@@ -125,14 +127,15 @@ export default function EventRegistrations() {
       ...filteredRegistrations.map((reg) =>
         [
           `"${reg.student.name}"`,
-          `"${reg.student.rollNumber || ''}"`,
+          `"\t${reg.student.rollNumber || ''}"`,
+          `"${reg.student.branch || ''}"`,
+          `"${reg.student.semester || ''}"`,
           `"${reg.student.email}"`,
           `"${reg.student.phone || ''}"`,
           `"${reg.type}"`,
           `"${reg.teamName || ''}"`,
           `"${(reg.teamMembers || []).join('; ')}"`,
-          `"${
-            reg.formData ? JSON.stringify(reg.formData).replace(/"/g, "'") : ''
+          `"${reg.formData ? JSON.stringify(reg.formData).replace(/"/g, "'") : ''
           }"`,
           `"${formatDate(reg.createdAt)}"`,
         ].join(',')
@@ -152,6 +155,8 @@ export default function EventRegistrations() {
     link.click();
     document.body.removeChild(link);
   };
+
+  console.log(registrations);
 
   return (
     <div className='min-h-screen gradient-mesh pt-20 pb-12'>
@@ -215,6 +220,7 @@ export default function EventRegistrations() {
                     <tr>
                       <th className='px-6 py-4'>Student Name</th>
                       <th className='px-6 py-4'>Roll Number</th>
+                      <th className='px-6 py-4'>Dept & Sem</th>
                       <th className='px-6 py-4'>Email & Phone</th>
                       <th className='px-6 py-4'>Registration Type</th>
                       <th className='px-6 py-4 text-center'>Actions</th>
@@ -245,6 +251,12 @@ export default function EventRegistrations() {
                           <td className='px-6 py-4 text-gray-300 font-mono text-sm'>
                             {reg.student.rollNumber || 'N/A'}
                           </td>
+                          <td className='px-6 py-4 text-sm text-gray-300'>
+                            <div>{reg.student.branch || 'N/A'}</div>
+                            <div className='text-xs text-gray-500'>
+                              Sem: {reg.student.semester || 'N/A'}
+                            </div>
+                          </td>
                           <td className='px-6 py-4 text-sm'>
                             <div className='text-white'>
                               {reg.student.email}
@@ -255,11 +267,10 @@ export default function EventRegistrations() {
                           </td>
                           <td className='px-6 py-4'>
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                                reg.type === 'MANUAL'
-                                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                  : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                              }`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${reg.type === 'MANUAL'
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                }`}
                             >
                               {reg.type}
                             </span>
@@ -307,11 +318,10 @@ export default function EventRegistrations() {
                             </div>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                              reg.type === 'MANUAL'
-                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                            }`}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${reg.type === 'MANUAL'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                              }`}
                           >
                             {reg.type}
                           </span>
@@ -324,6 +334,13 @@ export default function EventRegistrations() {
                             </span>
                             <span className='text-gray-400'>
                               {reg.student.rollNumber || 'N/A'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className='block text-gray-600'>Dept:</span>
+                            <span className='text-gray-400'>
+                              {reg.student.branch || 'N/A'} (
+                              {reg.student.semester || '-'})
                             </span>
                           </div>
                           <div className='text-right'>
@@ -384,6 +401,22 @@ export default function EventRegistrations() {
                     </span>
                     <p className='font-medium'>
                       {selectedRegistration.student.rollNumber || 'N/A'}
+                    </p>
+                  </div>
+                  <div className='space-y-1'>
+                    <span className='text-muted-foreground block text-xs'>
+                      Department
+                    </span>
+                    <p className='font-medium'>
+                      {selectedRegistration.student.branch || 'N/A'}
+                    </p>
+                  </div>
+                  <div className='space-y-1'>
+                    <span className='text-muted-foreground block text-xs'>
+                      Semester
+                    </span>
+                    <p className='font-medium'>
+                      {selectedRegistration.student.semester || 'N/A'}
                     </p>
                   </div>
                 </div>
