@@ -19,6 +19,11 @@ export default function Login() {
   const navigate = useNavigate();
   const { login, isLoading, error, user } = useAuthStore();
 
+  // Clear any stale errors (e.g. from a failed registration) when the Login page mounts
+  useEffect(() => {
+    useAuthStore.setState({ error: null });
+  }, []);
+
   const {
     register,
     handleSubmit,
