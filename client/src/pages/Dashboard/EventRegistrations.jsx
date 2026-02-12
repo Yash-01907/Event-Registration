@@ -11,6 +11,7 @@ import {
 import { useEvent, useEventRegistrations } from '@/hooks/useEvents';
 import { formatDate } from '@/lib/utils';
 import ManualEntryModal from '@/components/dashboard/ManualEntryModal';
+import useAuthStore from '@/store/authStore';
 
 const EventRegistrationsSkeleton = () => (
   <div className='space-y-4'>
@@ -86,6 +87,7 @@ const EventRegistrationsSkeleton = () => (
 
 export default function EventRegistrations() {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const { data: event } = useEvent(id);
   const {
     data: registrations = [],
@@ -166,7 +168,10 @@ export default function EventRegistrations() {
         <div className='mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
           <div>
             <Link
-              to='/coordinator-dashboard'
+              to={user?.role === 'FACULTY' || user?.role === 'ADMIN'
+                ? '/dashboard'
+                : '/coordinator-dashboard'
+              }
               className='flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-2'
             >
               <ArrowLeft className='h-4 w-4 mr-1' />
@@ -472,6 +477,6 @@ export default function EventRegistrations() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </div >
   );
 }

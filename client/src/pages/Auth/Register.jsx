@@ -99,7 +99,7 @@ export default function Register() {
         navigate("/");
       }
     } catch (error) {
-      console.error(error);
+      toast.error(error.response?.data?.message || "Registration failed");
     }
   };
 
