@@ -3,9 +3,29 @@ import prisma from '../config/db.js';
 // @desc    Create a new event
 // @route   POST /api/events
 // @access  Private (Faculty only ideally, but generally Protected for now)
+const VALID_DEPARTMENTS = [
+  'ALL',
+  'COMPUTER',
+  'ELECTRICAL',
+  'MECHANICAL',
+  'CIVIL',
+  'AUTO',
+];
+
 const createEvent = async (req, res) => {
-  const { name, date, description, location, fees, category, posterUrl } =
-    req.body;
+  const {
+    name,
+    date,
+    description,
+    location,
+    fees,
+    category,
+    posterUrl,
+    department,
+  } = req.body;
+
+  const dept =
+    department && VALID_DEPARTMENTS.includes(department) ? department : 'ALL';
 
   try {
     const event = await prisma.event.create({
@@ -16,6 +36,7 @@ const createEvent = async (req, res) => {
         location,
         fees: fees ? parseInt(fees) : 0,
         category,
+        department: dept,
         posterUrl,
         mainCoordinatorId: req.user.id,
         isTeamEvent: req.body.isTeamEvent || false,
@@ -158,8 +179,16 @@ const checkEventAccess = (event, user) => {
 // @route   PUT /api/events/:id
 // @access  Private (Main Coordinator only or Admin)
 const updateEvent = async (req, res) => {
-  const { name, date, description, location, fees, category, posterUrl } =
-    req.body;
+  const {
+    name,
+    date,
+    description,
+    location,
+    fees,
+    category,
+    posterUrl,
+    department,
+  } = req.body;
 
   try {
     const event = await prisma.event.findUnique({
@@ -181,30 +210,34 @@ const updateEvent = async (req, res) => {
         .json({ message: 'Not authorized to update this event' });
     }
 
+    const updateData = {
+      name,
+      date: date ? new Date(date) : undefined,
+      description,
+      location,
+      fees: fees ? parseInt(fees) : 0,
+      category,
+      posterUrl,
+      isTeamEvent: req.body.isTeamEvent,
+      minTeamSize: req.body.minTeamSize
+        ? parseInt(req.body.minTeamSize)
+        : undefined,
+      maxTeamSize: req.body.maxTeamSize
+        ? parseInt(req.body.maxTeamSize)
+        : undefined,
+      formConfig: req.body.formConfig,
+      semControlEnabled: req.body.semControlEnabled,
+      maxSem:
+        req.body.semControlEnabled && req.body.maxSem != null
+          ? parseInt(req.body.maxSem)
+          : null,
+    };
+    if (department !== undefined && VALID_DEPARTMENTS.includes(department)) {
+      updateData.department = department;
+    }
     const updatedEvent = await prisma.event.update({
       where: { id: req.params.id },
-      data: {
-        name,
-        date: date ? new Date(date) : undefined,
-        description,
-        location,
-        fees: fees ? parseInt(fees) : 0,
-        category,
-        posterUrl,
-        isTeamEvent: req.body.isTeamEvent,
-        minTeamSize: req.body.minTeamSize
-          ? parseInt(req.body.minTeamSize)
-          : undefined,
-        maxTeamSize: req.body.maxTeamSize
-          ? parseInt(req.body.maxTeamSize)
-          : undefined,
-        formConfig: req.body.formConfig,
-        semControlEnabled: req.body.semControlEnabled,
-        maxSem:
-          req.body.semControlEnabled && req.body.maxSem != null
-            ? parseInt(req.body.maxSem)
-            : null,
-      },
+      data: updateData,
     });
 
     res.status(200).json(updatedEvent);

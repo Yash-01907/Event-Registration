@@ -25,6 +25,15 @@ enum Category {
   SPORTS
 }
 
+enum Department {
+  ALL
+  COMPUTER
+  ELECTRICAL
+  MECHANICAL
+  CIVIL
+  AUTO
+}
+
 model User {
   id         String  @id @default(uuid())
   email      String  @unique
@@ -49,6 +58,7 @@ model Event {
   location    String?
   fees        Int       @default(0)
   category    Category?
+  department  Department @default(ALL)
   posterUrl   String?
   isPublished Boolean   @default(false)
 

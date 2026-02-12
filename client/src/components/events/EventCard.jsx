@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Ticket,
   CheckCircle2,
+  Building2,
 } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 import api from '@/lib/api';
@@ -38,6 +39,19 @@ const getCategoryColor = (category) => {
     default:
       return 'text-gray-400 border-gray-500/30 bg-gray-500/10';
   }
+};
+
+const getDepartmentLabel = (department) => {
+  const d = department ?? 'ALL';
+  const labels = {
+    ALL: 'All',
+    COMPUTER: 'Computer',
+    ELECTRICAL: 'Electrical',
+    MECHANICAL: 'Mechanical',
+    CIVIL: 'Civil',
+    AUTO: 'Auto',
+  };
+  return labels[d] ?? 'All';
 };
 
 const EventCard = memo(function EventCard({
@@ -145,6 +159,10 @@ const EventCard = memo(function EventCard({
           <div className='flex items-center text-sm text-gray-400 font-mono'>
             <MapPin className='h-4 w-4 mr-2 text-purple-500' />
             {event.location || 'Venue TBA'}
+          </div>
+          <div className='flex items-center text-sm text-gray-400 font-mono'>
+            <Building2 className='h-4 w-4 mr-2 text-amber-500' />
+            Department: {getDepartmentLabel(event.department)}
           </div>
           <div className='flex items-center justify-between mt-3 pt-3 border-t border-gray-800'>
             <div className='flex items-center text-sm text-gray-500 font-mono'>

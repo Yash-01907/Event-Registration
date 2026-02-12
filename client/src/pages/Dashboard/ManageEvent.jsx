@@ -207,6 +207,7 @@ export default function ManageEvent() {
     setValue('maxTeamSize', event.maxTeamSize);
     setValue('semControlEnabled', event.semControlEnabled ?? false);
     setValue('maxSem', event.maxSem ?? '');
+    setValue('department', event.department ?? 'ALL');
     if (event.formConfig) setQuestions(event.formConfig);
   }, [event, setValue]);
 
@@ -437,6 +438,34 @@ export default function ManageEvent() {
                       </option>
                       <option value='SPORTS' className='bg-background'>
                         Sports
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className='text-sm font-medium text-muted-foreground'>
+                      Department
+                    </label>
+                    <select
+                      className='mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                      {...register('department')}
+                    >
+                      <option value='ALL' className='bg-background'>
+                        All
+                      </option>
+                      <option value='COMPUTER' className='bg-background'>
+                        Computer
+                      </option>
+                      <option value='ELECTRICAL' className='bg-background'>
+                        Electrical
+                      </option>
+                      <option value='MECHANICAL' className='bg-background'>
+                        Mechanical
+                      </option>
+                      <option value='CIVIL' className='bg-background'>
+                        Civil
+                      </option>
+                      <option value='AUTO' className='bg-background'>
+                        Auto
                       </option>
                     </select>
                   </div>
