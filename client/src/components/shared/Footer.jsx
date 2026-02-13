@@ -127,10 +127,7 @@ export default function Footer() {
             <div className='space-y-3 text-gray-500 text-sm font-mono'>
               <p>
                 <span className='text-gray-600'>Email:</span>{' '}
-                <span className='text-cyan-400/80'>techfest@gdec.edu</span>
-              </p>
-              <p>
-                <span className='text-gray-600'>Phone:</span> +91 98765 43210
+                <span className='text-cyan-400/80'>techfest.gdec@gmail.com</span>
               </p>
               <p>
                 <span className='text-gray-600'>Location:</span> GDEC Campus
