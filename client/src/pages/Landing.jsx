@@ -130,7 +130,7 @@ const TypingText = memo(function TypingText({ text }) {
   );
 });
 
-const TECH_FEST_DATE = '2026-02-25T09:00:00';
+const TECH_FEST_DATE = '2026-02-20T09:00:00';
 
 export default function Landing() {
   const {
