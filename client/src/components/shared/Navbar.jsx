@@ -1,6 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Cpu, LogOut, User, Menu, X, Zap } from "lucide-react";
+import {
+  Cpu,
+  LogOut,
+  User,
+  Menu,
+  X,
+  Zap,
+  Calendar,
+  Gamepad2,
+} from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import { useState, useEffect } from "react";
 
@@ -61,36 +70,28 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        {/* <div className="hidden md:flex items-center gap-8">
-          <Link
-            to="/events"
-            className="relative text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-cyan-400 group"
-          >
-            Events
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all group-hover:w-full" />
-          </Link>
+        <div className="hidden md:flex items-center gap-6">
           <a
-            href="#tech"
-            className="relative text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-cyan-400 group"
+            href="https://drive.google.com/file/d/1eBNpI8j1ZyhpNXGT3WmvHZ59P_8Y7MR7/view?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-cyan-400 group"
           >
-            Tech
+            <Calendar className="h-4 w-4" />
+            Event Schedule
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all group-hover:w-full" />
           </a>
           <a
-            href="#sports"
-            className="relative text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-emerald-400 group"
+            href="https://drive.google.com/file/d/1aLrLg9mM54dIlWr1G_BShqLF0RsdbVt3/view?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-emerald-400 group"
           >
-            Sports
+            <Gamepad2 className="h-4 w-4" />
+            Fun Games
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-400 transition-all group-hover:w-full" />
           </a>
-          <a
-            href="#cultural"
-            className="relative text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-fuchsia-400 group"
-          >
-            Cultural
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-fuchsia-400 transition-all group-hover:w-full" />
-          </a>
-        </div> */}
+        </div>
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
@@ -206,6 +207,26 @@ export default function Navbar() {
           >
             Events
           </Link>
+          <a
+            href="https://drive.google.com/file/d/1eBNpI8j1ZyhpNXGT3WmvHZ59P_8Y7MR7/view?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-bold font-mono uppercase text-gray-400 hover:text-cyan-400 py-3 px-3 rounded-lg hover:bg-cyan-500/10 transition-all"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Calendar className="h-4 w-4" />
+            Event Schedule
+          </a>
+          <a
+            href="https://drive.google.com/file/d/1aLrLg9mM54dIlWr1G_BShqLF0RsdbVt3/view?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-bold font-mono uppercase text-gray-400 hover:text-emerald-400 py-3 px-3 rounded-lg hover:bg-emerald-500/10 transition-all"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Gamepad2 className="h-4 w-4" />
+            Fun Games
+          </a>
 
           {user ? (
             <div className="border-t border-gray-800/50 mt-2 pt-2 space-y-1">
