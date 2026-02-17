@@ -76,7 +76,7 @@ export default function Navbar() {
             href="https://drive.google.com/file/d/1eBNpI8j1ZyhpNXGT3WmvHZ59P_8Y7MR7/view?usp=drivesdk"
             target="_blank"
             rel="noopener noreferrer"
-            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-cyan-400 group"
+            className="relative flex items-center justify-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide transition-all text-cyan-400 text-glow-cyan-animated group"
           >
             <Calendar className="h-4 w-4" />
             Event Schedule
@@ -86,7 +86,7 @@ export default function Navbar() {
             href="https://drive.google.com/file/d/1aLrLg9mM54dIlWr1G_BShqLF0RsdbVt3/view?usp=drivesdk"
             target="_blank"
             rel="noopener noreferrer"
-            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-emerald-400 group"
+            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide transition-all text-emerald-400 text-glow-emerald-animated group"
           >
             <Gamepad2 className="h-4 w-4" />
             Fun Games
@@ -96,7 +96,7 @@ export default function Navbar() {
             href="https://drive.google.com/file/d/1C640AYeLbCB8-_Wk1sLnqGC5_oxgQgaD/view?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
-            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-purple-400 group"
+            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide transition-all text-purple-400 text-glow-purple-animated group"
           >
             <FileText className="h-4 w-4" />
             Brochure

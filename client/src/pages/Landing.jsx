@@ -212,7 +212,7 @@ export default function Landing() {
           {/* Glowing Badge */}
           <div className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 text-sm font-mono mb-8 pulse-ring'>
             <Sparkles className='h-4 w-4 animate-pulse' />
-            <span>FEBRUARY 23-25, 2026</span>
+            <span>FEBRUARY 20-21, 2026</span>
             <span className='text-gray-600'>•</span>
             <span>GDEC CAMPUS</span>
           </div>
