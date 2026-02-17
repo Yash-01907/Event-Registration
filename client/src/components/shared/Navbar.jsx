@@ -9,6 +9,7 @@ import {
   Zap,
   Calendar,
   Gamepad2,
+  FileText,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import { useState, useEffect } from "react";
@@ -90,6 +91,16 @@ export default function Navbar() {
             <Gamepad2 className="h-4 w-4" />
             Fun Games
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-400 transition-all group-hover:w-full" />
+          </a>
+          <a
+            href="https://drive.google.com/file/d/1C640AYeLbCB8-_Wk1sLnqGC5_oxgQgaD/view?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative flex items-center gap-1.5 text-sm font-bold font-mono uppercase tracking-wide text-gray-400 transition-all hover:text-purple-400 group"
+          >
+            <FileText className="h-4 w-4" />
+            Brochure
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-400 transition-all group-hover:w-full" />
           </a>
         </div>
 
@@ -226,6 +237,16 @@ export default function Navbar() {
           >
             <Gamepad2 className="h-4 w-4" />
             Fun Games
+          </a>
+          <a
+            href="https://drive.google.com/file/d/1C640AYeLbCB8-_Wk1sLnqGC5_oxgQgaD/view?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-bold font-mono uppercase text-gray-400 hover:text-purple-400 py-3 px-3 rounded-lg hover:bg-purple-500/10 transition-all"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <FileText className="h-4 w-4" />
+            Brochure
           </a>
 
           {user ? (
